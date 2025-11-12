@@ -46,7 +46,8 @@
     "vue": "catalog:",
     "vue-json-viewer": "catalog:",
     "vue-router": "catalog:",
-    "vue-tippy": "catalog:"
+    "vue-tippy": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/qrcode": "catalog:"
