@@ -121,7 +121,6 @@ const clearCache = async () => {
 const expanded = ref<boolean>(false);
 /**
  * 全部展开/折叠
- * @param expand 是否展开
  */
 const handleExpand = () => {
   expanded.value = !expanded.value;
