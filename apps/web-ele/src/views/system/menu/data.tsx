@@ -1,7 +1,7 @@
 import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
-import { VbenIcon, z } from '@vben/common-ui';
+import { z } from '@vben/common-ui';
 
 import { enabledDisabledOptions, yesNoOptions } from '#/constants';
 import { $t } from '#/locales';
@@ -64,22 +64,18 @@ export function useMenuFormSchema(): VbenFormSchema[] {
       rules: 'required',
     },
     {
-      component: 'Input',
+      component: 'IconPicker',
+      componentProps: {
+        prefix: 'lucide',
+        iconClass: 'size-4',
+      },
       dependencies: {
         // 类型不为按钮时显示
         show: (values) => values.type !== 3,
         triggerFields: ['type'],
       },
-      renderComponentContent: (model) => ({
-        addonBefore: () => <VbenIcon icon={model.icon} />,
-        addonAfter: () => (
-          <a href="https://icon-sets.iconify.design/" target="_blank">
-            搜索图标
-          </a>
-        ),
-      }),
       fieldName: 'icon',
-      help: '点击搜索图标跳转到iconify & 粘贴',
+      help: '点击输入框选择图标',
       label: '菜单图标',
     },
     {
@@ -306,6 +302,7 @@ export function useMenuColumns(): VxeTableGridOptions['columns'] {
       treeNode: true,
       width: 200,
       fixed: 'left',
+      slots: { default: 'title' },
     },
     {
       title: $t('system.menu.type'),

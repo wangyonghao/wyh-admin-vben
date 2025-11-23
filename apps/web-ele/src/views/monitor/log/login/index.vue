@@ -3,7 +3,7 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { LogResp } from '#/api/monitor/log';
 
-import { Page } from '@vben/common-ui';
+import { Badge } from '@vben-core/shadcn-ui';
 import { $t } from '@vben/locales';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -96,7 +96,6 @@ const [TableGrid] = useVbenVxeGrid({
   gridOptions: {
     columns: usePackageGridFieldColumns(),
     border: true,
-    height: 'auto',
     keepSource: true,
     columnConfig: {
       resizable: true,
@@ -138,17 +137,15 @@ const [TableGrid] = useVbenVxeGrid({
 </script>
 
 <template>
-  <Page auto-content-height>
-    <TableGrid>
-      <template #status="{ row }">
-        <ElTag v-if="row.status === 1" type="success">
-          {{ $t('common.success') }}
-        </ElTag>
-        <ElTag v-else type="danger">
-          {{ $t('common.failed') }}
-        </ElTag>
-      </template>
-    </TableGrid>
-  </Page>
+  <TableGrid>
+    <template #status="{ row }">
+      <Badge v-if="row.status === 1" variant="secondary" class="bg-green-500 text-white">
+        {{ $t('common.success') }}
+      </Badge>
+      <Badge v-else variant="destructive">
+        {{ $t('common.failed') }}
+      </Badge>
+    </template>
+  </TableGrid>
 </template>
 <style lang="scss" scoped></style>

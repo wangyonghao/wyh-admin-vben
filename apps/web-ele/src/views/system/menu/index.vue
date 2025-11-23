@@ -7,16 +7,20 @@ import { ref } from 'vue';
 import { Page, useVbenDrawer } from '@vben/common-ui';
 
 import {
-  ElButton,
-  ElDialog,
-  ElMessage,
-  ElPopconfirm,
-  ElSpace,
-  ElTag,
-} from 'element-plus';
+  VbenButton,
+  Badge,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  VbenIcon,
+} from '@vben-core/shadcn-ui';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { clearMenuCache, deleteMenu, listMenu } from '#/api';
+import { $t } from '@vben/locales';
 
 import { useMenuColumns, useMenuSearchFormFields } from './data';
 import EditModal from './EditModal.vue';
@@ -95,11 +99,24 @@ const handleAdd = () => {
   formDrawerApi.open();
 };
 
-const handleDelete = async (row: MenuResp) => {
+const deleteDialogVisible = ref(false);
+const deleteRow = ref<MenuResp | null>(null);
+
+const showDeleteDialog = (row: MenuResp) => {
+  deleteRow.value = row;
+  deleteDialogVisible.value = true;
+};
+
+const handleDelete = async () => {
+  if (!deleteRow.value) return;
+
   try {
-    await deleteMenu(row.id);
-    ElMessage.success('删除成功');
+    await deleteMenu(deleteRow.value.id);
+    // TODO: 使用 toast 替代 ElMessage
+    console.log('删除成功');
     await gridApi.query();
+    deleteDialogVisible.value = false;
+    deleteRow.value = null;
     return true;
   } catch {
     return false;
@@ -113,7 +130,8 @@ const handleClearCache = () => {
 };
 const clearCache = async () => {
   await clearMenuCache();
-  ElMessage.success('清除成功');
+  // TODO: 使用 toast 替代 ElMessage
+  console.log('清除成功');
   centerDialogVisible.value = false;
 };
 
@@ -131,41 +149,47 @@ const handleExpand = () => {
   <Page auto-content-height>
     <Grid :table-title="$t('system.menu.listTitle')">
       <template #toolbar-tools>
-        <ElSpace>
+        <div class="flex items-center gap-2">
           <span v-access:code="['system:menu:create']">
-            <ElButton type="primary" @click="handleAdd">
+            <VbenButton @click="handleAdd">
               {{ $t('pages.common.add') }}
-            </ElButton>
+            </VbenButton>
           </span>
           <span v-access:code="['system:menu:clearCache']">
-            <ElButton type="danger" @click="handleClearCache">
+            <VbenButton variant="destructive" @click="handleClearCache">
               {{ $t('pages.common.clearCache') }}
-            </ElButton>
+            </VbenButton>
           </span>
           <span>
-            <ElButton v-if="!expanded" @click="handleExpand">
+            <VbenButton v-if="!expanded" variant="outline" @click="handleExpand">
               {{ $t('pages.common.expand') }}
-            </ElButton>
+            </VbenButton>
           </span>
           <span>
-            <ElButton v-if="expanded" @click="handleExpand">
+            <VbenButton v-if="expanded" variant="outline" @click="handleExpand">
               {{ $t('pages.common.collapse') }}
-            </ElButton>
+            </VbenButton>
           </span>
-        </ElSpace>
+        </div>
+      </template>
+      <template #title="{ row }">
+        <div class="flex items-center gap-2">
+          <VbenIcon v-if="row.icon" :icon="row.icon" class="size-4" />
+          <span>{{ row.title }}</span>
+        </div>
       </template>
       <template #type="{ row }">
-        <ElTag v-if="row.type === 1" type="primary">目录</ElTag>
-        <ElTag v-if="row.type === 2" type="success">菜单</ElTag>
-        <ElTag v-if="row.type === 3">按钮</ElTag>
+        <Badge v-if="row.type === 1" variant="default">目录</Badge>
+        <Badge v-if="row.type === 2" variant="secondary" class="bg-green-500 text-white">菜单</Badge>
+        <Badge v-if="row.type === 3" variant="outline">按钮</Badge>
       </template>
       <template #status="{ row }">
-        <ElTag v-if="row.status" type="success">
+        <Badge v-if="row.status" variant="secondary" class="bg-green-500 text-white">
           {{ $t('common.enabled') }}
-        </ElTag>
-        <ElTag v-else type="danger">
+        </Badge>
+        <Badge v-else variant="destructive">
           {{ $t('common.disabled') }}
-        </ElTag>
+        </Badge>
       </template>
       <template #isExternal="{ row }">
         {{ row.isExternal ? $t('common.yes') : $t('common.no') }}
@@ -178,49 +202,61 @@ const handleExpand = () => {
       </template>
 
       <template #action="{ row }">
-        <ElSpace>
+        <div class="flex items-center gap-2">
           <span v-access:code="['system:menu:update']">
-            <ElButton @click="handleEdit(row)" type="primary" text link>
+            <VbenButton variant="link" @click="handleEdit(row)">
               {{ $t('common.edit') }}
-            </ElButton>
+            </VbenButton>
           </span>
           <span v-access:code="['system:menu:delete']">
-            <ElPopconfirm
-              title="确认删除?"
-              icon-color="red"
-              @confirm="handleDelete(row)"
-            >
-              <template #reference>
-                <ElButton type="danger" text link>
-                  {{ $t('common.delete') }}
-                </ElButton>
-              </template>
-            </ElPopconfirm>
+            <VbenButton variant="link" class="text-destructive" @click="showDeleteDialog(row)">
+              {{ $t('common.delete') }}
+            </VbenButton>
           </span>
-        </ElSpace>
+        </div>
       </template>
     </Grid>
     <FormDrawer @success="gridApi.query()" />
-    <div v-access:code="['system:menu:clearCache']">
-      <ElDialog
-        v-model="centerDialogVisible"
-        title="清空缓存"
-        width="500"
-        align-center
-      >
-        <span>是否确定清除菜单缓存？</span>
-        <template #footer>
-          <div class="dialog-footer">
-            <ElButton @click="centerDialogVisible = false">
-              {{ $t('common.cancel') }}
-            </ElButton>
-            <ElButton type="primary" @click="clearCache">
-              {{ $t('common.confirm') }}
-            </ElButton>
-          </div>
-        </template>
-      </ElDialog>
-    </div>
+
+    <!-- Clear Cache Dialog -->
+    <Dialog :open="centerDialogVisible" @update:open="(val) => centerDialogVisible = val">
+      <DialogContent class="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>清空缓存</DialogTitle>
+          <DialogDescription>
+            是否确定清除菜单缓存？
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <VbenButton variant="outline" @click="centerDialogVisible = false">
+            {{ $t('common.cancel') }}
+          </VbenButton>
+          <VbenButton @click="clearCache">
+            {{ $t('common.confirm') }}
+          </VbenButton>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <!-- Delete Confirmation Dialog -->
+    <Dialog :open="deleteDialogVisible" @update:open="(val) => deleteDialogVisible = val">
+      <DialogContent class="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>确认删除?</DialogTitle>
+          <DialogDescription>
+            此操作将永久删除该菜单项，是否继续？
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <VbenButton variant="outline" @click="deleteDialogVisible = false">
+            {{ $t('common.cancel') }}
+          </VbenButton>
+          <VbenButton variant="destructive" @click="handleDelete">
+            {{ $t('common.confirm') }}
+          </VbenButton>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </Page>
 </template>
 <style lang="scss" scoped></style>
