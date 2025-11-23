@@ -44,6 +44,7 @@
     "@codemirror/lang-vue": "^0.1.3",
     "@codemirror/theme-one-dark": "^6.1.3",
     "@ddietr/codemirror-themes": "^1.5.1",
+    "@tanstack/vue-table": "^8.21.3",
     "@vben-core/composables": "workspace:*",
     "@vben-core/icons": "workspace:*",
     "@vben-core/preferences": "workspace:*",

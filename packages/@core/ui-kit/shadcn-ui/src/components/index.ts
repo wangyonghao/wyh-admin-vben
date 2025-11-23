@@ -22,4 +22,5 @@ export * from './segmented';
 export * from './select';
 export * from './spine-text';
 export * from './spinner';
+export * from './table';
 export * from './tooltip';

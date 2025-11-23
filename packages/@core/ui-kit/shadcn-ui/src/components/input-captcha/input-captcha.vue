@@ -80,7 +80,7 @@ watch(
         :placeholder="placeholder"
       />
     </div>
-    <div class="captcha-image--container relative">
+    <div class="captcha-image--container relative ml-2">
       <img
         :src="captcha"
         class="h-[40px] w-[115px] cursor-pointer rounded-r-md"
@@ -93,7 +93,7 @@ watch(
       >
         <span class="captcha-loading"></span>
       </div>
-      <div v-if="expired" class="overlay" @click="onRefreshClick">
+      <div v-if="expired" class="overlay rounded-r-md" @click="onRefreshClick">
         <p>已过期，请刷新</p>
       </div>
     </div>
@@ -120,15 +120,6 @@ watch(
   border-bottom-color: transparent;
   border-radius: 50%;
   animation: loading-rotation 1s linear infinite;
-}
-
-/**
-  验证码输入框样式
-  去除右边的圆角
-*/
-input[id='code'] {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
 }
 
 .overlay {

@@ -4,4 +4,6 @@ export { default as AuthenticationLoginExpiredModal } from './login-expired-moda
 export { default as AuthenticationLogin } from './login.vue';
 export { default as AuthenticationQrCodeLogin } from './qrcode-login.vue';
 export { default as AuthenticationRegister } from './register.vue';
+export { default as AuthenticationThirdPartyLogin } from './third-party-login.vue';
+
 export type { AuthenticationProps } from './types';

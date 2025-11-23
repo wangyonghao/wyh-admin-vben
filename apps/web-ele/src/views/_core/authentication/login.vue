@@ -11,7 +11,7 @@ import {
   VbenInputPassword,
   VbenInputCaptcha
 } from '@vben-core/shadcn-ui';
-import { z, loginFormSchema } from '@vben/common-ui';
+import { AuthenticationThirdPartyLogin, z } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
 import { getImageCaptcha } from '#/api';
@@ -87,7 +87,9 @@ const validateForm = () => {
 
     // Validate captcha if enabled
     if (captchaInfo.value.isEnabled) {
-      z.string().min(1, $t('authentication.verifyRequiredTip')).parse(captcha.value);
+      z.string()
+        .min(1, $t('authentication.verifyRequiredTip'))
+        .parse(captcha.value);
     }
 
     validationErrors.value = {};
@@ -182,11 +184,8 @@ onMounted(() => {
     <form @submit="handleSubmit">
       <!-- Username Field -->
       <div class="mb-4">
-        <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-          {{ $t('authentication.username') }}
-        </label>
         <Input v-model="username" :placeholder="$t('authentication.usernameTip')"
-          :class="{ 'border-red-500': usernameError }" class="mt-2" @blur="validateField('username', username)" />
+          :class="{ 'border-red-500': usernameError }" @blur="validateField('username', username)" />
         <div v-if="usernameError" class="text-sm text-red-500 mt-1">
           {{ usernameError }}
         </div>
@@ -194,11 +193,8 @@ onMounted(() => {
 
       <!-- Password Field -->
       <div class="mb-4">
-        <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-          {{ $t('authentication.password') }}
-        </label>
         <VbenInputPassword v-model="password" :placeholder="$t('authentication.password')"
-          :class="{ 'border-red-500': passwordError }" class="mt-2" @blur="validateField('password', password)" />
+          :class="{ 'border-red-500': passwordError }" @blur="validateField('password', password)" />
         <div v-if="passwordError" class="text-sm text-red-500 mt-1">
           {{ passwordError }}
         </div>
@@ -206,12 +202,9 @@ onMounted(() => {
 
       <!-- Captcha Field (conditional) -->
       <div v-if="captchaInfo.isEnabled" class="mb-4">
-        <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-          {{ $t('authentication.code') }}
-        </label>
         <VbenInputCaptcha v-model="captcha" :captcha="captchaInfo.img" :expire-time="captchaInfo.expireTime"
           :placeholder="$t('authentication.code')"
-          :class="{ 'border-red-500': captchaError, 'focus:border-primary': !captchaError }" class="mt-2"
+          :class="{ 'border-red-500': captchaError, 'focus:border-primary': !captchaError }"
           @captcha-click="getCaptcha" @blur="validateField('captcha', captcha)" />
         <div v-if="captchaError" class="text-sm text-red-500 mt-1">
           {{ captchaError }}
@@ -248,6 +241,9 @@ onMounted(() => {
         {{ $t('authentication.qrcodeLogin') }}
       </VbenButton>
     </div>
+
+    <!-- 第三方登录 -->
+    <AuthenticationThirdPartyLogin />
 
     <!-- Register Link -->
     <div class="mt-3 text-center text-sm">
