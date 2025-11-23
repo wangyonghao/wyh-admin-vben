@@ -5,9 +5,20 @@ import type { NoticeQuery, NoticeResp } from '#/api/system/notice';
 import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
+import { IconifyIcon } from '@vben/icons';
 import { $t } from '@vben/locales';
 
-import { ElButton, ElMessage, ElPopconfirm, ElSpace } from 'element-plus';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  VbenButton,
+} from '@vben-core/shadcn-ui';
+
+import { ElMessage } from 'element-plus';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { deleteNotice, exportNotice, listNotice } from '#/api/system/notice';
@@ -108,11 +119,23 @@ const handleAdd = () => {
   router.push({ name: 'SystemNoticeAdd' });
 };
 
-const handleDelete = async (row: NoticeResp) => {
+const deleteDialogVisible = ref(false);
+const deleteRow = ref<NoticeResp | null>(null);
+
+const showDeleteDialog = (row: NoticeResp) => {
+  deleteRow.value = row;
+  deleteDialogVisible.value = true;
+};
+
+const handleDelete = async () => {
+  if (!deleteRow.value) return;
+
   try {
-    await deleteNotice(row.id);
+    await deleteNotice(deleteRow.value.id);
     ElMessage.success($t('pages.common.deleteSuccess'));
     await tableGridApi.query();
+    deleteDialogVisible.value = false;
+    deleteRow.value = null;
     return true;
   } catch {
     return false;
@@ -130,46 +153,59 @@ const handleExport = () => {
   <Page auto-content-height>
     <TableGrid :table-title="$t('system.notice.listTitle')">
       <template #toolbar-tools>
-        <ElSpace>
+        <div class="flex items-center gap-2">
           <span v-access:code="['system:notice:create']">
-            <ElButton type="primary" @click="handleAdd">
+            <VbenButton @click="handleAdd">
               {{ $t('pages.common.add') }}
-            </ElButton>
+            </VbenButton>
           </span>
           <span v-access:code="['system:notice:export']">
-            <ElButton type="danger" @click="handleExport">
+            <VbenButton variant="destructive" @click="handleExport">
               {{ $t('pages.common.export') }}
-            </ElButton>
+            </VbenButton>
           </span>
-        </ElSpace>
+        </div>
       </template>
       <template #action="{ row }">
-        <ElSpace>
+        <div class="flex items-center gap-2">
           <span v-access:code="['system:notice:view']">
-            <ElButton type="primary" text link @click="handlePreview(row)">
-              {{ $t('pages.common.preview') }}
-            </ElButton>
+            <VbenButton variant="ghost" size="icon" @click="handlePreview(row)">
+              <IconifyIcon icon="lucide:eye" class="w-4 h-4" />
+            </VbenButton>
           </span>
           <span v-access:code="['system:notice:update']">
-            <ElButton type="primary" text link @click="handleEdit(row)">
-              {{ $t('pages.common.edit') }}
-            </ElButton>
+            <VbenButton variant="ghost" size="icon" @click="handleEdit(row)">
+              <IconifyIcon icon="lucide:pencil" class="w-4 h-4" />
+            </VbenButton>
           </span>
-          <span v-access:code="['system:notice:delete']"></span>
-          <ElPopconfirm
-            :title="$t('ui.actionMessage.deleteConfirm', [row.title])"
-            icon-color="red"
-            @confirm="handleDelete(row)"
-          >
-            <template #reference>
-              <ElButton type="danger" text link>
-                {{ $t('pages.common.delete') }}
-              </ElButton>
-            </template>
-          </ElPopconfirm>
-        </ElSpace>
+          <span v-access:code="['system:notice:delete']">
+            <VbenButton variant="ghost" size="icon" @click="showDeleteDialog(row)">
+              <IconifyIcon icon="lucide:trash-2" class="w-4 h-4 text-destructive" />
+            </VbenButton>
+          </span>
+        </div>
       </template>
     </TableGrid>
+
+    <!-- Delete Confirmation Dialog -->
+    <Dialog :open="deleteDialogVisible" @update:open="(val) => deleteDialogVisible = val">
+      <DialogContent class="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{{ $t('ui.actionMessage.deleteTitle') }}</DialogTitle>
+          <DialogDescription>
+            {{ $t('ui.actionMessage.deleteConfirm', [deleteRow?.title]) }}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <VbenButton variant="outline" @click="deleteDialogVisible = false">
+            {{ $t('common.cancel') }}
+          </VbenButton>
+          <VbenButton variant="destructive" @click="handleDelete">
+            {{ $t('common.confirm') }}
+          </VbenButton>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </Page>
 </template>
 <style lang="scss" scoped></style>

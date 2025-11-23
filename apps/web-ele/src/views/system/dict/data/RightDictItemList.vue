@@ -5,12 +5,20 @@ import type { DictItemResp } from '#/api';
 import { ref } from 'vue';
 
 import { Card, CardContent, useVbenDrawer } from '@vben/common-ui';
+import { IconifyIcon } from '@vben/icons';
 
 import {
-  ElButton,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  VbenButton,
+} from '@vben-core/shadcn-ui';
+
+import {
   ElMessage,
-  ElPopconfirm,
-  ElSpace,
   ElTag,
 } from 'element-plus';
 
@@ -93,16 +101,29 @@ const handleAdd = () => {
   formDrawerApi.open();
 };
 
-const handleDelete = async (row: DictItemResp) => {
+const deleteDialogVisible = ref(false);
+const deleteRow = ref<DictItemResp | null>(null);
+
+const showDeleteDialog = (row: DictItemResp) => {
+  deleteRow.value = row;
+  deleteDialogVisible.value = true;
+};
+
+const handleDelete = async () => {
+  if (!deleteRow.value) return;
+
   try {
-    await deleteDictItem(row.id);
+    await deleteDictItem(deleteRow.value.id);
     ElMessage.success('删除成功');
     await gridApi.query();
+    deleteDialogVisible.value = false;
+    deleteRow.value = null;
     return true;
   } catch {
     return false;
   }
 };
+
 const onSuccess = () => {
   gridApi.query();
 };
@@ -112,13 +133,13 @@ const onSuccess = () => {
     <CardContent class="h-full overflow-auto">
       <Grid :table-title="$t('system.dictItem.list')">
         <template #toolbar-tools>
-          <ElSpace>
+          <div class="flex items-center gap-2">
             <span v-access:code="['system:dict:add']">
-              <ElButton type="primary" @click="handleAdd">
+              <VbenButton @click="handleAdd">
                 {{ $t('pages.common.add') }}
-              </ElButton>
+              </VbenButton>
             </span>
-          </ElSpace>
+          </div>
         </template>
         <template #value="{ row }">
           <ElTag :type="row.color">{{ row.value }}</ElTag>
@@ -127,28 +148,42 @@ const onSuccess = () => {
           {{ row.status ? $t('common.enabled') : $t('common.disable') }}
         </template>
         <template #action="{ row }">
-          <ElSpace>
+          <div class="flex items-center gap-2">
             <span v-access:code="['system:dictItem:create']">
-              <ElButton @click="handleEdit(row)" type="primary" text link>
-                {{ $t('common.edit') }}
-              </ElButton>
+              <VbenButton variant="ghost" size="icon" @click="handleEdit(row)">
+                <IconifyIcon icon="lucide:pencil" class="w-4 h-4" />
+              </VbenButton>
             </span>
             <span v-access:code="['system:dictItem:delete']">
-              <ElPopconfirm
-                title="确认删除?"
-                icon-color="red"
-                @confirm="handleDelete(row)"
-              >
-                <template #reference>
-                  <ElButton type="danger" text link> 删除 </ElButton>
-                </template>
-              </ElPopconfirm>
+              <VbenButton variant="ghost" size="icon" @click="showDeleteDialog(row)">
+                <IconifyIcon icon="lucide:trash-2" class="w-4 h-4 text-destructive" />
+              </VbenButton>
             </span>
-          </ElSpace>
+          </div>
         </template>
       </Grid>
     </CardContent>
     <FormDrawer @success="onSuccess" />
+
+    <!-- Delete Confirmation Dialog -->
+    <Dialog :open="deleteDialogVisible" @update:open="(val) => deleteDialogVisible = val">
+      <DialogContent class="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>确认删除</DialogTitle>
+          <DialogDescription>
+            确认删除字典项「{{ deleteRow?.label }}」？
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <VbenButton variant="outline" @click="deleteDialogVisible = false">
+            取消
+          </VbenButton>
+          <VbenButton variant="destructive" @click="handleDelete">
+            确认
+          </VbenButton>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </Card>
 </template>
 <style lang="scss" scoped></style>

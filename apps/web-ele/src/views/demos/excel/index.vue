@@ -20,6 +20,7 @@ import {
 } from 'element-plus';
 import * as XLSX from 'xlsx';
 
+import { IconifyIcon } from '@vben/icons';
 import { Page } from '@vben/common-ui';
 import {
   Table,
@@ -314,13 +315,13 @@ const deleteRow = () => {
           accept=".xlsx,.xls"
         >
           <ElButton type="primary">
-            <span class="lucide:upload mr-2" />
+            <IconifyIcon icon="lucide:upload" class="mr-2" />
             导入 Excel
           </ElButton>
         </ElUpload>
 
         <ElButton :disabled="!tableData.length" @click="handleExport">
-          <span class="lucide:download mr-2" />
+          <IconifyIcon icon="lucide:download" class="mr-2" />
           导出 Excel
         </ElButton>
 
@@ -329,14 +330,14 @@ const deleteRow = () => {
           type="danger"
           @click="handleClear"
         >
-          <span class="lucide:trash-2 mr-2" />
+          <IconifyIcon icon="lucide:trash-2" class="mr-2" />
           清空数据
         </ElButton>
 
         <ElDivider direction="vertical" />
 
         <ElButton :disabled="!tableData.length" @click="addRow">
-          <span class="lucide:plus mr-2" />
+          <IconifyIcon icon="lucide:plus" class="mr-2" />
           添加行
         </ElButton>
 
@@ -345,7 +346,7 @@ const deleteRow = () => {
           type="warning"
           @click="deleteRow"
         >
-          <span class="lucide:minus mr-2" />
+          <IconifyIcon icon="lucide:minus" class="mr-2" />
           删除行
         </ElButton>
 
@@ -405,7 +406,7 @@ const deleteRow = () => {
           :type="isBold ? 'primary' : 'default'"
           @click="toggleBold"
         >
-          <span class="lucide:bold" />
+          <IconifyIcon icon="lucide:bold" />
         </ElButton>
 
         <ElDivider direction="vertical" />
@@ -417,21 +418,21 @@ const deleteRow = () => {
             :type="currentTextAlign === 'left' ? 'primary' : 'default'"
             @click="handleTextAlignChange('left')"
           >
-            <span class="lucide:align-left" />
+            <IconifyIcon icon="lucide:align-left" />
           </ElButton>
           <ElButton
             :disabled="!selectedCell"
             :type="currentTextAlign === 'center' ? 'primary' : 'default'"
             @click="handleTextAlignChange('center')"
           >
-            <span class="lucide:align-center" />
+            <IconifyIcon icon="lucide:align-center" />
           </ElButton>
           <ElButton
             :disabled="!selectedCell"
             :type="currentTextAlign === 'right' ? 'primary' : 'default'"
             @click="handleTextAlignChange('right')"
           >
-            <span class="lucide:align-right" />
+            <IconifyIcon icon="lucide:align-right" />
           </ElButton>
         </div>
 
@@ -495,7 +496,7 @@ const deleteRow = () => {
         class="flex h-96 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700"
       >
         <div class="text-center">
-          <span class="lucide:file-spreadsheet mb-4 text-6xl text-gray-400" />
+          <IconifyIcon icon="lucide:file-spreadsheet" class="mb-4 text-6xl text-gray-400" />
           <p class="text-gray-600 dark:text-gray-400 mb-2">
             请导入 Excel 文件开始编辑
           </p>

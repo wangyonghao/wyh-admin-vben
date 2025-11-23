@@ -41,39 +41,15 @@ export const columns: VxeGridProps['columns'] = [
     headerAlign: 'left',
     align: 'left',
     width: 230,
-  },
-  {
-    title: '图标',
-    field: 'icon',
-    width: 80,
     slots: {
       default: ({ row }) => {
-        if (row?.icon === '#') {
-          return '';
-        }
         return (
-          <span class={'flex justify-center'}>
-            <VbenIcon icon={row.icon} />
-          </span>
-        );
-      },
-    },
-  },
-  {
-    title: '类型',
-    field: 'type',
-    width: 80,
-    slots: {
-      default: ({ row }) => {
-        const current = menuTypes[row.type as 1 | 2 | 3];
-        if (!current) {
-          return '未知';
-        }
-        return (
-          <span class="flex items-center justify-center gap-1">
-            {h(current.icon, { class: 'size-[18px]' })}
-            <span>{current.value}</span>
-          </span>
+          <div class="flex items-center gap-2">
+            {row?.icon && row.icon !== '#' && (
+              <VbenIcon icon={row.icon} class="w-4 h-4 flex-shrink-0" />
+            )}
+            <span>{row.label}</span>
+          </div>
         );
       },
     },

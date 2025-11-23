@@ -98,14 +98,13 @@ export function useDeptColumns(): VxeTableGridOptions['columns'] {
     {
       title: $t('system.dept.name'),
       field: 'name',
+      align: 'left',
       treeNode: true,
-      width: 300,
     },
     {
       title: $t('system.dept.status'),
       field: 'status',
       slots: { default: 'status' },
-      width: 120,
     },
     {
       title: $t('system.dept.description'),
@@ -114,12 +113,10 @@ export function useDeptColumns(): VxeTableGridOptions['columns'] {
     {
       title: $t('system.dept.createUserString'),
       field: 'createUserString',
-      width: 150,
     },
     {
       title: $t('system.dept.createTime'),
       field: 'createTime',
-      width: 150,
     },
     {
       align: 'center',
@@ -127,7 +124,6 @@ export function useDeptColumns(): VxeTableGridOptions['columns'] {
       fixed: 'right',
       slots: { default: 'action' },
       title: $t('common.operation'),
-      width: 160,
     },
   ];
 }

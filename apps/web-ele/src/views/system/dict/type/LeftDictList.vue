@@ -8,6 +8,17 @@ import type { DictResp } from '#/api';
 import { ref } from 'vue';
 
 import { Card, CardContent, useVbenModal } from '@vben/common-ui';
+import { IconifyIcon } from '@vben/icons';
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  VbenButton,
+} from '@vben-core/shadcn-ui';
 
 import { ElDialog, ElMessage } from 'element-plus';
 
@@ -92,11 +103,23 @@ const handleAdd = () => {
   modalApi.open();
 };
 
-const handleDelete = async (row: DictResp) => {
+const deleteDialogVisible = ref(false);
+const deleteRow = ref<DictResp | null>(null);
+
+const showDeleteDialog = (row: DictResp) => {
+  deleteRow.value = row;
+  deleteDialogVisible.value = true;
+};
+
+const handleDelete = async () => {
+  if (!deleteRow.value) return;
+
   try {
-    await deleteDict(row.id);
+    await deleteDict(deleteRow.value.id);
     ElMessage.success('删除成功');
     await gridApi.query();
+    deleteDialogVisible.value = false;
+    deleteRow.value = null;
     return true;
   } catch {
     return false;
@@ -129,47 +152,65 @@ const clearCache = async () => {
     <CardContent class="h-full overflow-auto">
       <Grid :table-title="$t('system.dict.list')">
         <template #toolbar-tools>
-          <ElSpace>
+          <div class="flex items-center gap-2">
             <span v-access:code="['system:dict:add']">
-              <ElButton type="primary" @click="handleAdd">
+              <VbenButton @click="handleAdd">
                 {{ $t('pages.common.add') }}
-              </ElButton>
+              </VbenButton>
             </span>
             <span v-access:code="['system:dict:item:clearCache']">
-              <ElButton type="danger" @click="handleClearCache">
+              <VbenButton variant="destructive" @click="handleClearCache">
                 {{ $t('pages.common.clearCache') }}
-              </ElButton>
+              </VbenButton>
             </span>
-          </ElSpace>
+          </div>
         </template>
         <template #isSystem="{ row }">
           {{ row.isSystem ? $t('common.yes') : $t('common.no') }}
         </template>
         <template #action="{ row }">
-          <ElSpace>
+          <div class="flex items-center gap-2">
             <span v-access:code="['system:dict:update']">
-              <ElButton @click="handleEdit(row)" type="primary" text link>
-                编辑
-              </ElButton>
+              <VbenButton variant="ghost" size="icon" @click="handleEdit(row)">
+                <IconifyIcon icon="lucide:pencil" class="w-4 h-4" />
+              </VbenButton>
             </span>
             <span v-access:code="['system:dict:delete']">
-              <ElPopconfirm
-                title="确认删除?"
-                icon-color="red"
-                @confirm="handleDelete(row)"
+              <VbenButton 
+                variant="ghost" 
+                size="icon" 
+                :disabled="row.isSystem"
+                @click="showDeleteDialog(row)"
               >
-                <template #reference>
-                  <ElButton :disabled="row.isSystem" type="danger" text link>
-                    删除
-                  </ElButton>
-                </template>
-              </ElPopconfirm>
+                <IconifyIcon icon="lucide:trash-2" class="w-4 h-4 text-destructive" />
+              </VbenButton>
             </span>
-          </ElSpace>
+          </div>
         </template>
       </Grid>
     </CardContent>
     <DictTypeModal @reload="gridApi.query()" />
+
+    <!-- Delete Confirmation Dialog -->
+    <Dialog :open="deleteDialogVisible" @update:open="(val) => deleteDialogVisible = val">
+      <DialogContent class="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>确认删除</DialogTitle>
+          <DialogDescription>
+            确认删除字典「{{ deleteRow?.name }}」？
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <VbenButton variant="outline" @click="deleteDialogVisible = false">
+            取消
+          </VbenButton>
+          <VbenButton variant="destructive" @click="handleDelete">
+            确认
+          </VbenButton>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
     <div v-access:code="['system:dict:item:clearCache']">
       <ElDialog
         v-model="centerDialogVisible"

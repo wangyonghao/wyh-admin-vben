@@ -6,9 +6,20 @@ import type { UserResp } from '#/api/system/user';
 import { watch } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
+import { IconifyIcon } from '@vben/icons';
 import { $t } from '@vben/locales';
 
-import { ElAvatar, ElButton, ElMessage, ElSpace } from 'element-plus';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  VbenButton,
+} from '@vben-core/shadcn-ui';
+
+import { ElAvatar, ElMessage } from 'element-plus';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { listRoleUser, unassignFromUsers } from '#/api';
@@ -142,11 +153,23 @@ const [TableGrid, tableGridApi] = useVbenVxeGrid({
   } as VxeTableGridOptions<UserResp>,
 });
 
-const handleCancelAssignment = async (row: UserResp) => {
+const deleteDialogVisible = ref(false);
+const deleteRow = ref<UserResp | null>(null);
+
+const showDeleteDialog = (row: UserResp) => {
+  deleteRow.value = row;
+  deleteDialogVisible.value = true;
+};
+
+const handleCancelAssignment = async () => {
+  if (!deleteRow.value) return;
+
   try {
-    await unassignFromUsers([row.id]);
+    await unassignFromUsers([deleteRow.value.id]);
     ElMessage.success($t('pages.common.deleteSuccess'));
     await tableGridApi.query();
+    deleteDialogVisible.value = false;
+    deleteRow.value = null;
     return true;
   } catch {
     return false;
@@ -173,13 +196,13 @@ watch(
 <template>
   <TableGrid :table-title="$t('system.user.listTitle')">
     <template #toolbar-tools>
-      <ElSpace>
+      <div class="flex items-center gap-2">
         <span v-access:code="['system:user:create']">
-          <ElButton type="primary" @click="handleAssign">
+          <VbenButton @click="handleAssign">
             {{ $t('system.role.assignRole') }}
-          </ElButton>
+          </VbenButton>
         </span>
-      </ElSpace>
+      </div>
     </template>
     <template #nickname="{ row }">
       <div class="flex flex-row items-center gap-2">
@@ -206,27 +229,18 @@ watch(
       </ElTag>
     </template>
     <template #action="{ row }">
-      <ElSpace class="h-full" alignment="flex-end">
+      <div class="flex items-center gap-2">
         <span v-access:code="['system:role:unassign']">
-          <ElPopconfirm
-            :title="
-              $t('system.role.cancelRoleConfirm', [
-                row.nickname,
-                props.roleName,
-              ])
-            "
-            icon-color="red"
-            @confirm="handleCancelAssignment(row)"
+          <VbenButton 
+            variant="ghost" 
+            size="icon" 
             :disabled="row.isSystem"
+            @click="showDeleteDialog(row)"
           >
-            <template #reference>
-              <ElButton type="danger" text link :disabled="row.isSystem">
-                {{ $t('system.role.cancelAssignment') }}
-              </ElButton>
-            </template>
-          </ElPopconfirm>
+            <IconifyIcon icon="lucide:user-minus" class="w-4 h-4 text-destructive" />
+          </VbenButton>
         </span>
-      </ElSpace>
+      </div>
     </template>
   </TableGrid>
   <RoleAssignModel
@@ -235,5 +249,25 @@ watch(
     @close="tableGridApi.query()"
     @success="tableGridApi.query()"
   />
+
+  <!-- Delete Confirmation Dialog -->
+  <Dialog :open="deleteDialogVisible" @update:open="(val) => deleteDialogVisible = val">
+    <DialogContent class="sm:max-w-[425px]">
+      <DialogHeader>
+        <DialogTitle>取消分配</DialogTitle>
+        <DialogDescription>
+          {{ $t('system.role.cancelRoleConfirm', [deleteRow?.nickname, props.roleName]) }}
+        </DialogDescription>
+      </DialogHeader>
+      <DialogFooter>
+        <VbenButton variant="outline" @click="deleteDialogVisible = false">
+          {{ $t('common.cancel') }}
+        </VbenButton>
+        <VbenButton variant="destructive" @click="handleCancelAssignment">
+          {{ $t('common.confirm') }}
+        </VbenButton>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 <style lang="scss" scoped></style>

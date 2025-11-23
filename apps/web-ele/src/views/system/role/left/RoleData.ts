@@ -62,7 +62,7 @@ export function useRoleGridSearchFormSchema(): VbenFormSchema[] {
 // Table 字段配置
 export function useRoleGridFieldColumns(): VxeTableGridOptions['columns'] {
   return [
-    { type: 'seq', width: 70, fixed: 'left' },
+    { type: 'seq', width: 42, fixed: 'left' },
     {
       field: 'name',
       title: $t('system.role.name'),
@@ -114,7 +114,6 @@ export function useRoleGridFieldColumns(): VxeTableGridOptions['columns'] {
       fixed: 'right',
       slots: { default: 'action' },
       title: $t('common.operation'),
-      width: 150,
     },
   ];
 }

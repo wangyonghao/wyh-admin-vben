@@ -4,19 +4,19 @@ import { reactive } from 'vue';
 import { ColPage } from '@vben/common-ui';
 
 import RoleList from './left/index.vue';
-import Permission from './right/Permission.vue';
+import RoleDetail from './right/index.vue';
 
-defineOptions({ name: 'SystemDict' });
+defineOptions({ name: 'SystemRole' });
 const props = reactive({
   leftCollapsedWidth: 5,
   leftCollapsible: true,
-  leftMaxWidth: 50,
+  leftMaxWidth: 35,
   leftMinWidth: 20,
-  leftWidth: 50,
+  leftWidth: 30,
   resizable: true,
-  rightWidth: 50,
-  splitHandle: false,
-  splitLine: false,
+  rightWidth: 70,
+  splitHandle: true,
+  splitLine: true,
 });
 </script>
 
@@ -25,7 +25,7 @@ const props = reactive({
     <template #left>
       <RoleList />
     </template>
-    <Permission />
+    <RoleDetail />
   </ColPage>
 </template>
 
