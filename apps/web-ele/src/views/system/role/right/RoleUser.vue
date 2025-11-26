@@ -3,7 +3,7 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { UserResp } from '#/api/system/user';
 
-import { watch } from 'vue';
+import { ref, watch } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 import { IconifyIcon } from '@vben/icons';
@@ -154,7 +154,7 @@ const [TableGrid, tableGridApi] = useVbenVxeGrid({
 });
 
 const deleteDialogVisible = ref(false);
-const deleteRow = ref<UserResp | null>(null);
+const deleteRow = ref<null | UserResp>(null);
 
 const showDeleteDialog = (row: UserResp) => {
   deleteRow.value = row;
@@ -231,13 +231,16 @@ watch(
     <template #action="{ row }">
       <div class="flex items-center gap-2">
         <span v-access:code="['system:role:unassign']">
-          <VbenButton 
-            variant="ghost" 
-            size="icon" 
+          <VbenButton
+            variant="ghost"
+            size="icon"
             :disabled="row.isSystem"
             @click="showDeleteDialog(row)"
           >
-            <IconifyIcon icon="lucide:user-minus" class="w-4 h-4 text-destructive" />
+            <IconifyIcon
+              icon="lucide:user-minus"
+              class="text-destructive h-4 w-4"
+            />
           </VbenButton>
         </span>
       </div>
@@ -251,12 +254,20 @@ watch(
   />
 
   <!-- Delete Confirmation Dialog -->
-  <Dialog :open="deleteDialogVisible" @update:open="(val) => deleteDialogVisible = val">
+  <Dialog
+    :open="deleteDialogVisible"
+    @update:open="(val) => (deleteDialogVisible = val)"
+  >
     <DialogContent class="sm:max-w-[425px]">
       <DialogHeader>
         <DialogTitle>取消分配</DialogTitle>
         <DialogDescription>
-          {{ $t('system.role.cancelRoleConfirm', [deleteRow?.nickname, props.roleName]) }}
+          {{
+            $t('system.role.cancelRoleConfirm', [
+              deleteRow?.nickname,
+              props.roleName,
+            ])
+          }}
         </DialogDescription>
       </DialogHeader>
       <DialogFooter>
@@ -270,4 +281,4 @@ watch(
     </DialogContent>
   </Dialog>
 </template>
-<style lang="scss" scoped></style>
+<style scoped></style>

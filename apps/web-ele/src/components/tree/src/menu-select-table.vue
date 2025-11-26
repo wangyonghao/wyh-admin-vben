@@ -18,6 +18,13 @@ import { nextTick, onMounted, ref, shallowRef, watch } from 'vue';
 import { cloneDeep, findGroupParentIds } from '@vben/utils';
 
 import { uniq } from 'es-toolkit';
+import {
+  ElAlert as Alert,
+  ElButton as DefaultButton,
+  ElCheckbox as Checkbox,
+  ElRadioGroup as RadioGroup,
+  ElSpace as Space,
+} from 'element-plus';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 
@@ -51,7 +58,7 @@ const props = withDefaults(
      * 注意这里不是双向绑定 需要调用getCheckedKeys实例方法来获取真正选中的节点
      */
     checkedKeys: () => [],
-    onCheckChangeEvent: () => {},
+    onCheckChangeEvent: () => { },
     onRefresh: undefined,
   },
 );
@@ -195,9 +202,25 @@ onMounted(() => {
   watch(
     () => props.menus,
     async (menus) => {
+      console.log('[MenuSelectTable] menus变化:', menus);
+      console.log('[MenuSelectTable] menus长度:', menus?.length);
+
+      if (!menus || menus.length === 0) {
+        console.warn('[MenuSelectTable] menus为空，跳过加载');
+        return;
+      }
+
       const clonedMenus = cloneDeep(menus);
       menusWithPermissions(clonedMenus);
+      console.log('[MenuSelectTable] 处理后的数据:', clonedMenus);
+      console.log('[MenuSelectTable] 加载数据到表格...');
       await tableApi.grid.loadData(clonedMenus);
+
+      // 检查表格数据
+      const tableData = tableApi.grid.getData();
+      console.log('[MenuSelectTable] 表格当前数据:', tableData);
+      console.log('[MenuSelectTable] 表格数据长度:', tableData?.length);
+      console.log('[MenuSelectTable] 数据加载完成');
 
       // 展开全部 默认true
       if (props.defaultExpandAll) {
@@ -205,6 +228,7 @@ onMounted(() => {
         setExpandOrCollapse(true);
       }
     },
+    { immediate: true },
   );
 
   /**
@@ -226,8 +250,10 @@ onMounted(() => {
   watch(
     () => props.checkedKeys,
     async (value) => {
+      console.log('[MenuSelectTable] checkedKeys变化:', value);
       // 获取表格data 如果checkedKeys在menus的watch之前触发 这里会拿到空 导致勾选异常
       const records = tableApi.grid.getData();
+      console.log('[MenuSelectTable] 当前表格数据:', records);
 
       // 清空全部permissions选中
       records.forEach((item) => {
@@ -240,6 +266,7 @@ onMounted(() => {
 
       setCheckedByKeys(records, allCheckedKeys, association.value);
       updateCheckedNumber();
+      console.log('[MenuSelectTable] checkedKeys设置完成');
     },
   );
 });
@@ -372,14 +399,8 @@ defineExpose({
   <div class="flex h-full flex-col" id="menu-select-table">
     <BasicTable>
       <template #toolbar-actions>
-        <RadioGroup
-          v-model="association"
-          :options="nodeOptions"
-          :is-button="true"
-          button-style="solid"
-          option-type="button"
-          @change="handleAssociationChange"
-        />
+        <RadioGroup v-model="association" :options="nodeOptions" :is-button="true" button-style="solid"
+          option-type="button" @change="handleAssociationChange" />
         <div class="mx-2">
           <Alert type="info">
             <div>
@@ -409,12 +430,8 @@ defineExpose({
       </template>
       <template #permissions="{ row }">
         <div class="flex flex-wrap gap-x-3 gap-y-1">
-          <Checkbox
-            v-for="permission in row.permissions"
-            :key="permission.id"
-            v-model="permission.checked"
-            @change="() => handlePermissionChange(row)"
-          >
+          <Checkbox v-for="permission in row.permissions" :key="permission.id" v-model="permission.checked"
+            @change="() => handlePermissionChange(row)">
             {{ permission.label }}
           </Checkbox>
         </div>

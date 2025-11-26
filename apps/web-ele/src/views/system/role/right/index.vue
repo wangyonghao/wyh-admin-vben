@@ -13,8 +13,8 @@ import { Tabs, TabsList, TabsTrigger, VbenButton } from '@vben-core/shadcn-ui';
 import { getRole, listRolePermissionTree } from '#/api/system/role';
 
 import { emitter } from '../mitt';
-import RoleUser from './RoleUser.vue';
 import RolePermission from './RolePermission.vue';
+import RoleUser from './RoleUser.vue';
 
 // 角色id
 const dataId = ref<number | string>();
@@ -32,11 +32,14 @@ const activeTab = ref('permission');
 
 // 监听左侧角色管理行点击时，右侧的数据处理
 emitter.on('rowClick', async (value) => {
+  console.log('接收到rowClick事件:', value);
   loading.value = true;
   try {
     dataId.value = value;
+    console.log('开始获取菜单列表...');
     // 获取菜单列表
     const menus = await listRolePermissionTree();
+    console.log('菜单列表:', menus);
     // i18n处理
     eachTree(menus, (node) => {
       node.label = ((node.title ?? node.name ?? '') as string).includes('.')
@@ -45,9 +48,14 @@ emitter.on('rowClick', async (value) => {
     });
     menuTree.value = menus;
     await nextTick();
+    console.log('开始获取角色详情...');
     // 查询角色详情
     roleDetail.value = await getRole(dataId.value);
+    console.log('角色详情:', roleDetail.value);
     selectKeys.value = roleDetail.value.menuIds;
+    console.log('选中的菜单ID:', selectKeys.value);
+  } catch (error) {
+    console.error('加载角色数据失败:', error);
   } finally {
     loading.value = false;
   }
@@ -104,13 +112,8 @@ const handleRefresh = () => {
       <!-- Tab 内容 -->
       <div class="flex-1 overflow-hidden">
         <div v-show="activeTab === 'permission'" class="h-full">
-          <RolePermission
-            :role-id="dataId!"
-            :role-detail="roleDetail"
-            :menu-tree="menuTree"
-            :select-keys="selectKeys"
-            @refresh="handleRefresh"
-          />
+          <RolePermission :role-id="dataId!" :role-detail="roleDetail" :menu-tree="menuTree" :select-keys="selectKeys"
+            @refresh="handleRefresh" />
         </div>
 
         <div v-show="activeTab === 'members'" class="h-full">
@@ -130,7 +133,7 @@ const handleRefresh = () => {
 :deep(.tabs-trigger) {
   border-radius: 0;
   border-bottom: 2px solid transparent;
-  
+
   &[data-state="active"] {
     background: transparent;
     border-bottom-color: hsl(var(--primary));

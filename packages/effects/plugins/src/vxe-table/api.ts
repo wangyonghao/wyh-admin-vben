@@ -67,17 +67,39 @@ export class VxeGridApi<T extends Record<string, any> = any> {
     }
   }
 
+  /**
+   * 触发查询：在 grid 未挂载时等待挂载完成；并检查 commitProxy 是否可用。
+   */
   async query(params: Record<string, any> = {}) {
     try {
-      await this.grid.commitProxy('query', toRaw(params));
+      if (!this.isMounted) {
+        await this.stateHandler.waitForCondition();
+      }
+      const commit = (this.grid as any)?.commitProxy;
+      if (typeof commit !== 'function') {
+        console.warn('[VxeGridApi] grid.commitProxy 不可用，请检查 proxyConfig.ajax 是否配置或调用时机是否在挂载之后');
+        return;
+      }
+      await commit('query', toRaw(params));
     } catch (error) {
       console.error('Error occurred while querying:', error);
     }
   }
 
+  /**
+   * 触发重载：在 grid 未挂载时等待挂载完成；并检查 commitProxy 是否可用。
+   */
   async reload(params: Record<string, any> = {}) {
     try {
-      await this.grid.commitProxy('reload', toRaw(params));
+      if (!this.isMounted) {
+        await this.stateHandler.waitForCondition();
+      }
+      const commit = (this.grid as any)?.commitProxy;
+      if (typeof commit !== 'function') {
+        console.warn('[VxeGridApi] grid.commitProxy 不可用，请检查 proxyConfig.ajax 是否配置或调用时机是否在挂载之后');
+        return;
+      }
+      await commit('reload', toRaw(params));
     } catch (error) {
       console.error('Error occurred while reloading:', error);
     }

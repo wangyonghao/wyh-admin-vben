@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { RoleDetailResp } from '#/api/system/role';
-import type { MenuSelectTable } from '#/components/tree';
 
 import { ref } from 'vue';
 
@@ -12,6 +11,7 @@ import { VbenButton } from '@vben-core/shadcn-ui';
 import { ElMessage } from 'element-plus';
 
 import { updateRolePermission } from '#/api/system/role';
+import { MenuSelectTable } from '#/components/tree';
 
 interface Props {
   roleId: number | string;
