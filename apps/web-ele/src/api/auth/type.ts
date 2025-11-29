@@ -86,3 +86,17 @@ export interface LoginResp {
 export interface SocialAuthAuthorizeResp {
   authorizeUrl: string;
 }
+
+/** 强制修改密码请求参数 */
+export interface ForceChangePasswordReq {
+  userId: string;
+  tempToken: string;
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+/** 强制修改密码响应类型 */
+export interface ForceChangePasswordResp {
+  token: string;
+}

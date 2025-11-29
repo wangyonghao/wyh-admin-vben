@@ -85,7 +85,7 @@ const handleRefresh = () => {
     <!-- 内容区 -->
     <div v-else class="h-full flex flex-col">
       <!-- 顶部操作栏 -->
-      <div class="flex items-center justify-between px-6 py-4 border-b bg-card">
+      <div class="flex items-center justify-between p-3 border-b bg-card">
         <Tabs v-model="activeTab" class="w-auto">
           <TabsList>
             <TabsTrigger value="permission" class="gap-2">
@@ -103,17 +103,14 @@ const handleRefresh = () => {
           <VbenButton variant="outline" size="sm" @click="handleRefresh">
             <IconifyIcon icon="lucide:refresh-cw" class="w-4 h-4" />
           </VbenButton>
-          <VbenButton variant="ghost" size="sm">
-            <IconifyIcon icon="lucide:more-horizontal" class="w-4 h-4" />
-          </VbenButton>
         </div>
       </div>
 
       <!-- Tab 内容 -->
       <div class="flex-1 overflow-hidden">
         <div v-show="activeTab === 'permission'" class="h-full">
-          <RolePermission :role-id="dataId!" :role-detail="roleDetail" :menu-tree="menuTree" :select-keys="selectKeys"
-            @refresh="handleRefresh" />
+          <RolePermission :role-id="dataId!" :role-detail="roleDetail" :menu-tree="menuTree"
+            :select-keys="selectKeys" />
         </div>
 
         <div v-show="activeTab === 'members'" class="h-full">

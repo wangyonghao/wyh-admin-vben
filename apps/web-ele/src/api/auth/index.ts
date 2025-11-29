@@ -4,44 +4,48 @@ import { requestClient as http } from '#/api/request';
 
 export type * from './type';
 
-const BASE_URL = '/auth';
-
-/** @desc 账号登录 */
+/** 账号登录 */
 export function accountLogin(req: T.AccountLoginReq) {
-  return http.post<T.LoginResp>(`${BASE_URL}/login`, req);
+  return http.post<T.LoginResp>('/auth/login', req);
 }
 
-/** @desc 手机号登录 */
+/** 手机号登录 */
 export function phoneLogin(req: T.PhoneLoginReq) {
-  return http.post<T.LoginResp>(`${BASE_URL}/login`, req);
+  return http.post<T.LoginResp>('/auth/login', req);
 }
 
-/** @desc 邮箱登录 */
+/** 邮箱登录 */
 export function emailLogin(req: T.EmailLoginReq) {
-  return http.post<T.LoginResp>(`${BASE_URL}/login`, req);
+  return http.post<T.LoginResp>('/auth/login', req);
 }
 
-/** @desc 三方账号登录 */
+/** 三方账号登录 */
 export function socialLogin(req: any) {
-  return http.post<T.LoginResp>(`${BASE_URL}/login`, req);
+  return http.post<T.LoginResp>('/auth/login', req);
 }
 
-/** @desc 三方账号登录授权 */
+/** 三方账号登录授权 */
 export function socialAuth(source: string) {
-  return http.get<T.SocialAuthAuthorizeResp>(`${BASE_URL}/${source}`);
+  return http.get<T.SocialAuthAuthorizeResp>(`/auth/${source}`);
 }
 
-/** @desc 退出登录 */
+/** 退出登录 */
+ */
 export function logout() {
-  return http.post(`${BASE_URL}/logout`);
+  return http.post('/auth/logout');
 }
 
-/** @desc 获取用户信息 */
+/** 获取用户信息 */
 export const getUserInfo = () => {
-  return http.get<T.UserInfo>(`${BASE_URL}/user/info`);
+  return http.get<T.UserInfo>('/auth/user');
 };
 
-/** @desc 获取路由信息 */
+/** 获取路由信息 */
 export const getUserRoute = () => {
-  return http.get<T.RouteItem[]>(`${BASE_URL}/user/route`);
+  return http.get<T.RouteItem[]>('/auth/user/route');
 };
+
+/** 强制修改密码（密码过期时使用） */
+export function forceChangePassword(req: T.ForceChangePasswordReq) {
+  return http.post<T.ForceChangePasswordResp>('/auth/force-change-password', req);
+}

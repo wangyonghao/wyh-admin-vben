@@ -1,40 +1,37 @@
-<!--
-不兼容也不会兼容一些错误用法
-比如: 菜单下放目录 菜单下放菜单
-比如: 按钮下放目录 按钮下放菜单 按钮下放按钮
--->
-<script setup lang="tsx">
-import type { MenuPermissionOption } from './data';
-
-import type {
-  VxeGridDefines,
-  VxeGridProps,
-  VxeTableGridOptions,
-} from '#/adapter/vxe-table';
+<script setup lang="ts">
 import type { MenuResp } from '#/api';
+import type { ID } from '#/types/api';
 
-import { nextTick, onMounted, ref, shallowRef, watch } from 'vue';
+import { nextTick, ref, watch } from 'vue';
 
+import { IconifyIcon } from '@vben/icons';
 import { cloneDeep, findGroupParentIds } from '@vben/utils';
 
+import {
+  Checkbox,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  VbenButton,
+} from '@vben-core/shadcn-ui';
+
 import { uniq } from 'es-toolkit';
-import {
-  ElAlert as Alert,
-  ElButton as DefaultButton,
-  ElCheckbox as Checkbox,
-  ElRadioGroup as RadioGroup,
-  ElSpace as Space,
-} from 'element-plus';
 
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+export interface Permission {
+  checked: boolean;
+  id: ID;
+  label: string;
+}
 
-import { columns, nodeOptions } from './data';
-import {
-  menusWithPermissions,
-  rowAndChildrenChecked,
-  setPermissionsChecked,
-  setTableChecked,
-} from './helper';
+export interface MenuPermissionOption extends MenuResp {
+  permissions: Permission[];
+  expanded?: boolean;
+  level?: number;
+  label?: string;
+}
 
 defineOptions({
   name: 'MenuSelectTable',
@@ -48,18 +45,14 @@ const props = withDefaults(
     menus: MenuResp[];
     onCheckChangeEvent?: (values: (number | string)[]) => void;
     onRefresh?: () => void;
+    showToolbar?: boolean;
   }>(),
   {
-    /**
-     * 是否默认展开全部
-     */
     defaultExpandAll: true,
-    /**
-     * 注意这里不是双向绑定 需要调用getCheckedKeys实例方法来获取真正选中的节点
-     */
     checkedKeys: () => [],
     onCheckChangeEvent: () => { },
     onRefresh: undefined,
+    showToolbar: true,
   },
 );
 
@@ -70,374 +63,413 @@ const association = defineModel<boolean>('association', {
   default: true,
 });
 
-const gridOptions: VxeGridProps = {
-  checkboxConfig: {
-    // checkbox显示的字段
-    labelField: 'label',
-    // 是否严格模式 即节点不关联
-    checkStrictly: !association.value,
-    // 保存状态
-    reserve: true,
-  },
-  size: 'small',
-  columns,
-  height: 'auto',
-  keepSource: true,
-  pagerConfig: {
-    enabled: false,
-  },
-  proxyConfig: {
-    enabled: false,
-  },
-  toolbarConfig: {
-    refresh: false,
-    custom: false,
-  },
-  rowConfig: {
-    isHover: false,
-    isCurrent: false,
-    keyField: 'id',
-  },
-  /**
-   * 开启虚拟滚动
-   * 数据量小可以选择关闭
-   * 如果遇到样式问题(空白、错位 滚动等)可以选择关闭虚拟滚动
-   */
-  scrollY: {
-    enabled: true,
-    gt: 0,
-  },
-  treeConfig: {
-    parentField: 'parentId',
-    rowField: 'id',
-    transform: false,
-  },
-  // 溢出换行显示
-  showOverflow: false,
-} as VxeTableGridOptions<MenuPermissionOption>;
+// 扁平化的菜单数据（用于渲染）
+const flatMenus = ref<MenuPermissionOption[]>([]);
+// 选中的菜单ID集合
+const selectedIds = ref<Set<number | string>>(new Set());
 
 /**
- * 用于界面显示选中的数量
+ * 将菜单树转换为带权限的结构
  */
-const checkedNum = ref(0);
-/**
- * 更新选中的数量
- */
-function updateCheckedNumber() {
-  checkedNum.value = getCheckedKeys().length;
-  if (props.onCheckChangeEvent) {
-    props.onCheckChangeEvent(getCheckedKeys());
-  }
+function menusWithPermissions(menus: MenuResp[]): MenuPermissionOption[] {
+  const result: MenuPermissionOption[] = [];
+
+  menus.forEach((menu) => {
+    const item: MenuPermissionOption = {
+      ...menu,
+      permissions: [],
+      expanded: props.defaultExpandAll,
+    };
+
+    // 如果是菜单类型(type=2)且有子节点
+    if (menu.type === 2 && menu.children && menu.children.length > 0) {
+      // 检查是否有按钮类型的子节点
+      const hasButton = menu.children.some((child) => child.type === 3);
+
+      if (hasButton) {
+        // 如果包含按钮，将所有子节点都作为权限
+        item.permissions = menu.children.map((child) => ({
+          id: child.id,
+          label: child.title || child.name || '',
+          checked: false,
+        }));
+        item.children = [];
+      } else {
+        // 否则递归处理子节点
+        item.children = menusWithPermissions(menu.children) as any;
+      }
+    } else if (menu.children && menu.children.length > 0) {
+      // 其他类型（目录等）递归处理子节点
+      item.children = menusWithPermissions(menu.children) as any;
+    }
+
+    result.push(item);
+  });
+
+  return result;
 }
 
-const [BasicTable, tableApi] = useVbenVxeGrid({
-  gridOptions,
-  gridEvents: {
-    // 勾选事件
-    checkboxChange: (params: VxeGridDefines.CheckboxChangeEventParams) => {
-      // 选中还是取消选中
-      const checked = params.checked;
-      // 行
-      const record = params.row;
-      if (association.value) {
-        // 节点关联
-        // 设置所有子节点选中状态
-        rowAndChildrenChecked(record, checked);
-      } else {
-        // 节点独立
-        // 点行会勾选/取消全部权限  点权限不会勾选行
-        setPermissionsChecked(record, checked);
-      }
-      updateCheckedNumber();
-    },
-    // 全选事件
-    checkboxAll: (params: VxeGridDefines.CheckboxAllEventParams) => {
-      const records = params.$grid.getData();
-      records.forEach((item) => {
-        rowAndChildrenChecked(item, params.checked);
-      });
-      updateCheckedNumber();
-    },
-  },
-});
+/**
+ * 将树形结构扁平化，用于渲染
+ */
+/**
+ * 将树形结构扁平化，用于渲染
+ */
+function flattenMenus(
+  menus: MenuPermissionOption[],
+  level = 0,
+  parentExpanded = true,
+): MenuPermissionOption[] {
+  const result: MenuPermissionOption[] = [];
+
+  menus.forEach((menu) => {
+    menu.level = level;
+    result.push(menu);
+
+    if (
+      menu.children &&
+      menu.children.length > 0 &&
+      menu.expanded &&
+      parentExpanded
+    ) {
+      result.push(
+        ...flattenMenus(menu.children as MenuPermissionOption[], level + 1, true),
+      );
+    }
+  });
+
+  return result;
+}
 
 /**
- * 设置表格选中
- * @param menus menu
- * @param keys 选中的key
- * @param triggerOnchange 节点独立情况 不需要触发onChange(false)
+ * 切换展开/折叠
  */
-function setCheckedByKeys(
-  menus: MenuPermissionOption[],
-  keys: (number | string)[],
-  triggerOnchange: boolean,
-) {
-  menus.forEach((item) => {
-    // 设置权限columns选中
-    if (item.permissions && item.permissions.length > 0) {
-      // 遍历 设置勾选
-      item.permissions.forEach((permission) => {
-        if (keys.includes(permission.id)) {
-          permission.checked = true;
-          // 手动触发onChange来选中 节点独立情况不需要处理
-          triggerOnchange && handlePermissionChange(item);
+function toggleExpand(menu: MenuPermissionOption) {
+  menu.expanded = !menu.expanded;
+  updateFlatMenus();
+}
+
+/**
+ * 更新扁平化菜单
+ */
+function updateFlatMenus() {
+  flatMenus.value = flattenMenus(processedMenus.value);
+}
+
+/**
+ * 处理后的菜单数据
+ */
+const processedMenus = ref<MenuPermissionOption[]>([]);
+
+/**
+ * 切换菜单选中状态
+ */
+function toggleMenuCheck(menu: MenuPermissionOption, checked: boolean) {
+  if (checked) {
+    selectedIds.value.add(menu.id);
+  } else {
+    selectedIds.value.delete(menu.id);
+  }
+
+  // 如果是节点关联模式
+  if (association.value) {
+    // 选中/取消选中所有子节点
+    toggleChildrenCheck(menu, checked);
+    // 选中/取消选中所有权限
+    if (menu.permissions) {
+      menu.permissions.forEach((perm) => {
+        perm.checked = checked;
+        if (checked) {
+          selectedIds.value.add(perm.id);
+        } else {
+          selectedIds.value.delete(perm.id);
         }
       });
     }
-
-    // 设置children选中
-    if (item.children && item.children.length > 0) {
-      setCheckedByKeys(item.children as any, keys, triggerOnchange);
-    } else if (keys.includes(item.id)) {
-      // 设置行选中
-      tableApi.grid.setCheckboxRow(item, true);
-    }
-  });
-}
-
-onMounted(() => {
-  /**
-   * 加载表格数据 转为指定结构
-   */
-  watch(
-    () => props.menus,
-    async (menus) => {
-      console.log('[MenuSelectTable] menus变化:', menus);
-      console.log('[MenuSelectTable] menus长度:', menus?.length);
-
-      if (!menus || menus.length === 0) {
-        console.warn('[MenuSelectTable] menus为空，跳过加载');
-        return;
-      }
-
-      const clonedMenus = cloneDeep(menus);
-      menusWithPermissions(clonedMenus);
-      console.log('[MenuSelectTable] 处理后的数据:', clonedMenus);
-      console.log('[MenuSelectTable] 加载数据到表格...');
-      await tableApi.grid.loadData(clonedMenus);
-
-      // 检查表格数据
-      const tableData = tableApi.grid.getData();
-      console.log('[MenuSelectTable] 表格当前数据:', tableData);
-      console.log('[MenuSelectTable] 表格数据长度:', tableData?.length);
-      console.log('[MenuSelectTable] 数据加载完成');
-
-      // 展开全部 默认true
-      if (props.defaultExpandAll) {
-        await nextTick();
-        setExpandOrCollapse(true);
-      }
-    },
-    { immediate: true },
-  );
-
-  /**
-   * 节点关联变动 更新表格勾选效果
-   */
-  watch(association, (value) => {
-    tableApi.setGridOptions({
-      checkboxConfig: {
-        checkStrictly: !value,
-      },
-    });
-  });
-
-  /**
-   * checkedKeys依赖menus
-   * 要注意加载顺序
-   * !!!要在外部确保menus先加载!!!
-   */
-  watch(
-    () => props.checkedKeys,
-    async (value) => {
-      console.log('[MenuSelectTable] checkedKeys变化:', value);
-      // 获取表格data 如果checkedKeys在menus的watch之前触发 这里会拿到空 导致勾选异常
-      const records = tableApi.grid.getData();
-      console.log('[MenuSelectTable] 当前表格数据:', records);
-
-      // 清空全部permissions选中
-      records.forEach((item) => {
-        rowAndChildrenChecked(item, false);
-      });
-      // 需要清空全部勾选
-      await tableApi.grid.clearCheckboxRow();
-
-      const allCheckedKeys = uniq([...value]);
-
-      setCheckedByKeys(records, allCheckedKeys, association.value);
-      updateCheckedNumber();
-      console.log('[MenuSelectTable] checkedKeys设置完成');
-    },
-  );
-});
-
-// 缓存上次(切换节点关系前)选中的keys
-const lastCheckedKeys = shallowRef<(number | string)[]>([]);
-/**
- * 节点关联变动 事件
- */
-async function handleAssociationChange(value: boolean) {
-  // async function handleAssociationChange(e: RadioChangeEvent) {
-  lastCheckedKeys.value = getCheckedKeys();
-  // 清空全部permissions选中
-  const records = tableApi.grid.getData();
-  records.forEach((item) => {
-    rowAndChildrenChecked(item, false);
-  });
-  // 需要清空全部勾选
-  await tableApi.grid.clearCheckboxRow();
-  // 滚动到顶部
-  await tableApi.grid.scrollTo(0, 0);
-
-  // 节点切换 不同的选中
-  setTableChecked(lastCheckedKeys.value, records, tableApi, value);
+  }
 
   updateCheckedNumber();
+}
+
+/**
+ * 递归切换子节点选中状态
+ */
+function toggleChildrenCheck(menu: MenuPermissionOption, checked: boolean) {
+  if (menu.children && menu.children.length > 0) {
+    (menu.children as MenuPermissionOption[]).forEach((child) => {
+      if (checked) {
+        selectedIds.value.add(child.id);
+      } else {
+        selectedIds.value.delete(child.id);
+      }
+
+      // 递归处理子节点的权限
+      if (child.permissions) {
+        child.permissions.forEach((perm) => {
+          perm.checked = checked;
+          if (checked) {
+            selectedIds.value.add(perm.id);
+          } else {
+            selectedIds.value.delete(perm.id);
+          }
+        });
+      }
+
+      toggleChildrenCheck(child, checked);
+    });
+  }
+}
+
+/**
+ * 切换权限选中状态
+ */
+function togglePermissionCheck(
+  menu: MenuPermissionOption,
+  permission: Permission,
+  checked: boolean,
+) {
+  permission.checked = checked;
+
+  if (checked) {
+    selectedIds.value.add(permission.id);
+    // 如果是节点关联模式，选中权限时也选中菜单
+    if (association.value) {
+      selectedIds.value.add(menu.id);
+    }
+  } else {
+    selectedIds.value.delete(permission.id);
+    // 如果是节点关联模式，取消所有权限时也取消菜单
+    if (association.value) {
+      const hasCheckedPermission = menu.permissions?.some((p) => p.checked);
+      if (!hasCheckedPermission) {
+        selectedIds.value.delete(menu.id);
+      }
+    }
+  }
+
+  updateCheckedNumber();
+}
+
+/**
+ * 检查菜单是否选中
+ */
+function isMenuChecked(menu: MenuPermissionOption): boolean {
+  return selectedIds.value.has(menu.id);
+}
+
+/**
+ * 选中的数量
+ */
+const checkedNum = ref(0);
+
+/**
+ * 更新选中数量
+ */
+function updateCheckedNumber() {
+  checkedNum.value = selectedIds.value.size;
+  if (props.onCheckChangeEvent) {
+    props.onCheckChangeEvent(Array.from(selectedIds.value));
+  }
 }
 
 /**
  * 全部展开/折叠
- * @param expand 是否展开
  */
 function setExpandOrCollapse(expand: boolean) {
-  tableApi.grid?.setAllTreeExpand(expand);
+  function toggleAll(menus: MenuPermissionOption[]) {
+    menus.forEach((menu) => {
+      menu.expanded = expand;
+      if (menu.children && menu.children.length > 0) {
+        toggleAll(menu.children as MenuPermissionOption[]);
+      }
+    });
+  }
+
+  toggleAll(processedMenus.value);
+  updateFlatMenus();
 }
 
 /**
- * 权限列表 checkbox勾选的事件
- * @param row 行
+ * 根据keys设置选中状态
  */
-function handlePermissionChange(row: any) {
-  // 节点关联
-  if (association.value) {
-    const checkedPermissions = row.permissions.filter(
-      (item: any) => item.checked === true,
-    );
-    // 有一条选中 则整个行选中
-    if (checkedPermissions.length > 0) {
-      tableApi.grid.setCheckboxRow(row, true);
-    }
-    // 无任何选中 则整个行不选中
-    if (checkedPermissions.length === 0) {
-      tableApi.grid.setCheckboxRow(row, false);
-    }
+function setCheckedByKeys(keys: (number | string)[]) {
+  selectedIds.value = new Set(keys);
+
+  // 更新权限的选中状态
+  function updatePermissions(menus: MenuPermissionOption[]) {
+    menus.forEach((menu) => {
+      if (menu.permissions) {
+        menu.permissions.forEach((perm) => {
+          perm.checked = keys.includes(perm.id);
+        });
+      }
+      if (menu.children && menu.children.length > 0) {
+        updatePermissions(menu.children as MenuPermissionOption[]);
+      }
+    });
   }
-  // 节点独立 不处理
+
+  updatePermissions(processedMenus.value);
   updateCheckedNumber();
 }
 
 /**
- * 获取勾选的key
- * @param records 行记录列表
- * @param addCurrent 是否添加当前行的id
+ * 获取选中的keys
  */
-function getKeys(records: MenuPermissionOption[], addCurrent: boolean) {
-  const allKeys: (number | string)[] = [];
-  records.forEach((item) => {
-    // 处理children
-    if (item.children && item.children.length > 0) {
-      const keys = getKeys(item.children as MenuPermissionOption[], addCurrent);
-      allKeys.push(...keys);
-    }
-    // 当前行的id
-    addCurrent && allKeys.push(item.id);
-    // 当前行权限id 获取已经选中的
-    if (item.permissions && item.permissions.length > 0) {
-      const ids = item.permissions
-        .filter((m) => m.checked === true)
-        .map((m) => m.id);
-      allKeys.push(...ids);
-    }
-  });
-  return uniq(allKeys);
-}
-
-/**
- * 获取选中的key
- */
-function getCheckedKeys() {
-  // 节点关联
+function getCheckedKeys(): (number | string)[] {
   if (association.value) {
-    const records = tableApi?.grid?.getCheckboxRecords?.(true) ?? [];
-    // 子节点
-    const nodeKeys = getKeys(records, true);
-    // 所有父节点
-    const parentIds = findGroupParentIds(props.menus, nodeKeys as number[]);
-    // 拼接 去重
-    const realKeys = uniq([...parentIds, ...nodeKeys]);
-    return realKeys;
+    // 节点关联模式：需要包含所有父节点
+    const keys = Array.from(selectedIds.value);
+    const parentIds = findGroupParentIds(props.menus, keys as number[]);
+    return uniq([...parentIds, ...keys]);
   }
-  // 节点独立
-
-  // 勾选的行
-  const records = tableApi?.grid?.getCheckboxRecords?.(true) ?? [];
-  // 全部数据 用于获取permissions
-  const allRecords = tableApi?.grid?.getData?.() ?? [];
-  // 表格已经选中的行ids
-  const checkedIds = records.map((item) => item.id);
-  // 所有已经勾选权限的ids
-  const permissionIds = getKeys(allRecords, false);
-  // 合并 去重
-  const allIds = uniq([...checkedIds, ...permissionIds]);
-  return allIds;
+  // 节点独立模式：直接返回选中的keys
+  return Array.from(selectedIds.value);
 }
 
-// 加载锁定
-const setLoading = (loading: boolean) => {
-  tableApi.setLoading(loading);
-};
 /**
- * 暴露给外部使用 获取已选中的key
+ * 设置加载状态
  */
+const loading = ref(false);
+function setLoading(value: boolean) {
+  loading.value = value;
+}
+
+// 监听菜单数据变化
+watch(
+  () => props.menus,
+  (menus) => {
+    if (!menus || menus.length === 0) {
+      return;
+    }
+
+    const clonedMenus = cloneDeep(menus);
+    processedMenus.value = menusWithPermissions(clonedMenus);
+
+    // 如果有选中的keys，应用选中状态
+    if (props.checkedKeys && props.checkedKeys.length > 0) {
+      setCheckedByKeys(props.checkedKeys);
+    }
+
+    updateFlatMenus();
+
+    // 展开全部
+    if (props.defaultExpandAll) {
+      nextTick(() => {
+        setExpandOrCollapse(true);
+      });
+    }
+  },
+  { immediate: true },
+);
+
+// 监听选中的keys变化
+watch(
+  () => props.checkedKeys,
+  (keys) => {
+    if (keys) {
+      setCheckedByKeys(keys);
+      // 强制更新视图，确保复选框状态正确渲染
+      updateFlatMenus();
+    }
+  },
+  { deep: true }
+);
+
+// 暴露方法
 defineExpose({
   getCheckedKeys,
   setLoading,
+  setExpandOrCollapse,
 });
 </script>
 
 <template>
-  <div class="flex h-full flex-col" id="menu-select-table">
-    <BasicTable>
-      <template #toolbar-actions>
-        <RadioGroup v-model="association" :options="nodeOptions" :is-button="true" button-style="solid"
-          option-type="button" @change="handleAssociationChange" />
-        <div class="mx-2">
-          <Alert type="info">
-            <div>
-              已选中
-              <span class="text-primary mx-1 font-semibold">
-                {{ checkedNum }}
-              </span>
-              个节点
-            </div>
-          </Alert>
+  <div class="flex h-full flex-col">
+    <!-- 工具栏 -->
+    <div v-if="showToolbar" class="flex items-center justify-between border-b bg-muted/50 px-4 py-3">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-muted-foreground">节点关联:</span>
+          <Checkbox :checked="association" @update:checked="(val) => (association = val)" />
         </div>
-      </template>
-      <template #toolbar-tools>
-        <Space>
-          <slot name="toolbar-tools-left"></slot>
-          <DefaultButton @click="setExpandOrCollapse(false)">
-            {{ $t('pages.common.collapse') }}
-          </DefaultButton>
-          <DefaultButton @click="setExpandOrCollapse(true)">
-            {{ $t('pages.common.expand') }}
-          </DefaultButton>
-          <DefaultButton @click="props.onRefresh" v-if="!!props.onRefresh">
-            {{ $t('pages.common.refresh') }}
-          </DefaultButton>
-          <slot name="toolbar-tools-right"></slot>
-        </Space>
-      </template>
-      <template #permissions="{ row }">
-        <div class="flex flex-wrap gap-x-3 gap-y-1">
-          <Checkbox v-for="permission in row.permissions" :key="permission.id" v-model="permission.checked"
-            @change="() => handlePermissionChange(row)">
-            {{ permission.label }}
-          </Checkbox>
+        <div class="rounded-md bg-blue-50 px-3 py-1 text-sm dark:bg-blue-950">
+          已选中
+          <span class="mx-1 font-semibold text-primary">{{ checkedNum }}</span>
+          个节点
         </div>
-      </template>
-    </BasicTable>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <VbenButton variant="outline" size="sm" @click="setExpandOrCollapse(false)">
+          <IconifyIcon icon="lucide:chevrons-up" class="mr-1.5 h-4 w-4" />
+          折叠全部
+        </VbenButton>
+        <VbenButton variant="outline" size="sm" @click="setExpandOrCollapse(true)">
+          <IconifyIcon icon="lucide:chevrons-down" class="mr-1.5 h-4 w-4" />
+          展开全部
+        </VbenButton>
+        <VbenButton v-if="props.onRefresh" variant="outline" size="sm" @click="props.onRefresh">
+          <IconifyIcon icon="lucide:refresh-cw" class="mr-1.5 h-4 w-4" />
+          刷新
+        </VbenButton>
+      </div>
+    </div>
+
+    <!-- 表格 -->
+    <div class="flex-1 overflow-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead class="px-3 py-2 w-[32px]"></TableHead>
+            <TableHead class="px-3 py-2 h-6 w-[238px]">菜单</TableHead>
+            <TableHead class="px-3 py-2 h-6">权限</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow v-for="menu in flatMenus" :key="menu.id" class="group">
+            <TableCell class="px-3 py-2">
+              <!-- 复选框 -->
+              <Checkbox :checked="isMenuChecked(menu)" @update:checked="(val) => toggleMenuCheck(menu, val)" />
+            </TableCell>
+            <!-- 菜单名称列 -->
+            <TableCell class="px-3 py-2">
+              <div class="flex items-center gap-2" :style="{ paddingLeft: `${(menu.level || 0) * 1}em` }">
+                <!-- 展开/折叠图标 -->
+                <button v-if="menu.children && menu.children.length > 0"
+                  class="flex h-5 w-5 items-center justify-center rounded hover:bg-accent" @click="toggleExpand(menu)">
+                  <IconifyIcon :icon="menu.expanded
+                    ? 'lucide:chevron-down'
+                    : 'lucide:chevron-right'
+                    " class="h-4 w-4" />
+                </button>
+                <div v-else class="w-5" />
+                <!-- 图标 -->
+                <IconifyIcon v-if="menu.icon && menu.icon !== '#'" :icon="menu.icon" class="h-4 w-4 flex-shrink-0" />
+                <!-- 菜单名称 -->
+                <span class="text-sm">{{ menu.title || menu.name }}</span>
+              </div>
+            </TableCell>
+
+            <!-- 权限列 -->
+            <TableCell class="px-3 py-2">
+              <div v-if="menu.permissions && menu.permissions.length > 0" class="flex flex-wrap gap-x-4 gap-y-2">
+                <label v-for="permission in menu.permissions" :key="permission.id"
+                  class="flex cursor-pointer items-center gap-1.5 text-sm">
+                  <Checkbox :checked="permission.checked" @update:checked="
+                    (val) => togglePermissionCheck(menu, permission, val)
+                  " />
+                  <span>{{ permission.label }}</span>
+                </label>
+              </div>
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    </div>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+/* 自定义样式 */
+</style>

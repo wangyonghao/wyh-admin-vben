@@ -141,7 +141,7 @@ onMounted(() => {
             @keyup.enter="handleSearch" />
         </div>
         <span v-access:code="['system:role:create']">
-          <VbenButton size="sm" class="h-9" @click="handleAdd">
+          <VbenButton size="sm" class="h-9" variant="outline" @click="handleAdd">
             <IconifyIcon icon="lucide:plus" class="h-4 w-4" />
           </VbenButton>
         </span>
@@ -159,7 +159,7 @@ onMounted(() => {
         <p class="text-sm">{{ $t('noData') }}</p>
       </div>
 
-      <div v-else class="p-2">
+      <div v-else class="p-3">
         <div v-for="role in roles" :key="role.id"
           class="group relative flex cursor-pointer items-center gap-3 rounded-md transition-all" :class="[
             selectedRoleId === role.id

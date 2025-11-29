@@ -37,7 +37,19 @@ export const useAuthStore = defineStore('auth', () => {
       params.password = encryptByRsa(params.password) || '';
       params.clientId = import.meta.env.VITE_CLIENT_ID;
       params.authType = AuthTypeConstants.ACCOUNT;
-      const { token } = await loginApi(params);
+      const loginResp = await loginApi(params);
+
+      // 检查是否密码过期
+      if (loginResp.code === 'PASSWORD_EXPIRED') {
+        return {
+          userInfo: null,
+          passwordExpired: true,
+          userId: loginResp.userId,
+          tempToken: loginResp.tempToken,
+        };
+      }
+
+      const { token } = loginResp;
 
       // 如果成功获取到 accessToken
       if (token) {
@@ -79,6 +91,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     return {
       userInfo,
+      passwordExpired: false,
     };
   }
 

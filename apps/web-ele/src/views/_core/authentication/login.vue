@@ -16,6 +16,9 @@ import { $t } from '@vben/locales';
 
 import { getImageCaptcha } from '#/api';
 import { useAuthStore } from '#/store';
+import { useAccessStore } from '@vben/stores';
+
+import ForceChangePassword from './force-change-password.vue';
 
 defineOptions({ name: 'Login' });
 
@@ -35,6 +38,11 @@ const username = ref('');
 const password = ref('');
 const captcha = ref('');
 const rememberMe = ref(false);
+
+// Password expired state
+const passwordExpired = ref(false);
+const expiredUserId = ref('');
+const expiredTempToken = ref('');
 
 // Remember me functionality
 const REMEMBER_ME_KEY = `REMEMBER_ME_USERNAME_${location.hostname}`;
@@ -143,13 +151,48 @@ const handleSubmit = async (event?: Event) => {
     );
 
     // Call auth login
-    await authStore.authLogin(loginData);
+    const result = await authStore.authLogin(loginData);
+
+    // Check if password expired
+    if (result.passwordExpired) {
+      passwordExpired.value = true;
+      expiredUserId.value = result.userId || '';
+      expiredTempToken.value = result.tempToken || '';
+    }
   } catch (error) {
     console.error('Login failed:', error);
     // Reset captcha on failure
     if (captchaInfo.value.isEnabled) {
       getCaptcha();
     }
+  }
+};
+
+// Handle password change success
+const handlePasswordChangeSuccess = async (token: string) => {
+  try {
+    // Store the new token
+    const accessStore = useAccessStore();
+    accessStore.setAccessToken(token);
+
+    // Fetch user info and redirect
+    const userInfo = await authStore.fetchUserInfo();
+    await router.push(userInfo.homePath || '/dashboard');
+  } catch (error) {
+    console.error('Failed to complete login after password change:', error);
+  }
+};
+
+// Handle password change cancel
+const handlePasswordChangeCancel = () => {
+  passwordExpired.value = false;
+  expiredUserId.value = '';
+  expiredTempToken.value = '';
+  // Reset form
+  password.value = '';
+  captcha.value = '';
+  if (captchaInfo.value.isEnabled) {
+    getCaptcha();
   }
 };
 
@@ -169,88 +212,95 @@ onMounted(() => {
 </script>
 
 <template>
-  <div @keydown.enter.prevent="onSubmit">
-    <!-- Title Section -->
-    <div class="mb-7 sm:mx-auto sm:w-full sm:max-w-md">
-      <h2 class="text-foreground mb-3 text-3xl font-bold leading-9 tracking-tight lg:text-4xl">
-        {{ $t('authentication.welcomeBack') }} 👋🏻
-      </h2>
-      <p class="text-muted-foreground lg:text-md text-sm">
-        {{ $t('authentication.loginSubtitle') }}
-      </p>
-    </div>
+  <div>
+    <!-- Login Form -->
+    <div v-if="!passwordExpired" @keydown.enter.prevent="handleSubmit">
+      <!-- Title Section -->
+      <div class="mb-7 sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 class="text-foreground mb-3 text-3xl font-bold leading-9 tracking-tight lg:text-4xl">
+          {{ $t('authentication.welcomeBack') }} 👋🏻
+        </h2>
+        <p class="text-muted-foreground lg:text-md text-sm">
+          {{ $t('authentication.loginSubtitle') }}
+        </p>
+      </div>
 
-    <!-- Form Section -->
-    <form @submit="handleSubmit">
-      <!-- Username Field -->
-      <div class="mb-4">
-        <Input v-model="username" :placeholder="$t('authentication.usernameTip')"
-          :class="{ 'border-red-500': usernameError }" @blur="validateField('username', username)" />
-        <div v-if="usernameError" class="text-sm text-red-500 mt-1">
-          {{ usernameError }}
+      <!-- Form Section -->
+      <form @submit="handleSubmit">
+        <!-- Username Field -->
+        <div class="mb-4">
+          <Input v-model="username" :placeholder="$t('authentication.usernameTip')"
+            :class="{ 'border-red-500': usernameError }" @blur="validateField('username', username)" />
+          <div v-if="usernameError" class="text-sm text-red-500 mt-1">
+            {{ usernameError }}
+          </div>
         </div>
-      </div>
 
-      <!-- Password Field -->
-      <div class="mb-4">
-        <VbenInputPassword v-model="password" :placeholder="$t('authentication.password')"
-          :class="{ 'border-red-500': passwordError }" @blur="validateField('password', password)" />
-        <div v-if="passwordError" class="text-sm text-red-500 mt-1">
-          {{ passwordError }}
+        <!-- Password Field -->
+        <div class="mb-4">
+          <VbenInputPassword v-model="password" :placeholder="$t('authentication.password')"
+            :class="{ 'border-red-500': passwordError }" @blur="validateField('password', password)" />
+          <div v-if="passwordError" class="text-sm text-red-500 mt-1">
+            {{ passwordError }}
+          </div>
         </div>
-      </div>
 
-      <!-- Captcha Field (conditional) -->
-      <div v-if="captchaInfo.isEnabled" class="mb-4">
-        <VbenInputCaptcha v-model="captcha" :captcha="captchaInfo.img" :expire-time="captchaInfo.expireTime"
-          :placeholder="$t('authentication.code')"
-          :class="{ 'border-red-500': captchaError, 'focus:border-primary': !captchaError }"
-          @captcha-click="getCaptcha" @blur="validateField('captcha', captcha)" />
-        <div v-if="captchaError" class="text-sm text-red-500 mt-1">
-          {{ captchaError }}
+        <!-- Captcha Field (conditional) -->
+        <div v-if="captchaInfo.isEnabled" class="mb-4">
+          <VbenInputCaptcha v-model="captcha" :captcha="captchaInfo.img" :expire-time="captchaInfo.expireTime"
+            :placeholder="$t('authentication.code')"
+            :class="{ 'border-red-500': captchaError, 'focus:border-primary': !captchaError }"
+            @captcha-click="getCaptcha" @blur="validateField('captcha', captcha)" />
+          <div v-if="captchaError" class="text-sm text-red-500 mt-1">
+            {{ captchaError }}
+          </div>
         </div>
+      </form>
+
+      <!-- Remember Me and Forget Password -->
+      <div class="mb-6 flex justify-between">
+        <div class="flex-center">
+          <VbenCheckbox v-model:checked="rememberMe" name="rememberMe">
+            {{ $t('authentication.rememberMe') }}
+          </VbenCheckbox>
+        </div>
+
+        <span class="vben-link text-sm font-normal" @click="handleGo('/auth/forget-password')">
+          {{ $t('authentication.forgetPassword') }}
+        </span>
       </div>
-    </form>
 
-    <!-- Remember Me and Forget Password -->
-    <div class="mb-6 flex justify-between">
-      <div class="flex-center">
-        <VbenCheckbox v-model:checked="rememberMe" name="rememberMe">
-          {{ $t('authentication.rememberMe') }}
-        </VbenCheckbox>
-      </div>
-
-      <span class="vben-link text-sm font-normal" @click="handleGo('/auth/forget-password')">
-        {{ $t('authentication.forgetPassword') }}
-      </span>
-    </div>
-
-    <!-- Submit Button -->
-    <VbenButton :class="{
-      'cursor-wait': authStore.loginLoading,
-    }" :loading="authStore.loginLoading" aria-label="login" class="w-full" @click="handleSubmit">
-      {{ $t('common.login') }}
-    </VbenButton>
-
-    <!-- Alternative Login Methods -->
-    <div class="mb-2 mt-4 flex items-center justify-between">
-      <VbenButton class="w-1/2" variant="outline" @click="handleGo('/auth/code-login')">
-        {{ $t('authentication.mobileLogin') }}
+      <!-- Submit Button -->
+      <VbenButton :class="{
+        'cursor-wait': authStore.loginLoading,
+      }" :loading="authStore.loginLoading" aria-label="login" class="w-full" @click="handleSubmit">
+        {{ $t('common.login') }}
       </VbenButton>
-      <VbenButton class="ml-4 w-1/2" variant="outline" @click="handleGo('/auth/qrcode-login')">
-        {{ $t('authentication.qrcodeLogin') }}
-      </VbenButton>
+
+      <!-- Alternative Login Methods -->
+      <div class="mb-2 mt-4 flex items-center justify-between">
+        <VbenButton class="w-1/2" variant="outline" @click="handleGo('/auth/code-login')">
+          {{ $t('authentication.mobileLogin') }}
+        </VbenButton>
+        <VbenButton class="ml-4 w-1/2" variant="outline" @click="handleGo('/auth/qrcode-login')">
+          {{ $t('authentication.qrcodeLogin') }}
+        </VbenButton>
+      </div>
+
+      <!-- 第三方登录 -->
+      <AuthenticationThirdPartyLogin />
+
+      <!-- Register Link -->
+      <div class="mt-3 text-center text-sm">
+        {{ $t('authentication.accountTip') }}
+        <span class="vben-link text-sm font-normal" @click="handleGo('/auth/register')">
+          {{ $t('authentication.createAccount') }}
+        </span>
+      </div>
     </div>
 
-    <!-- 第三方登录 -->
-    <AuthenticationThirdPartyLogin />
-
-    <!-- Register Link -->
-    <div class="mt-3 text-center text-sm">
-      {{ $t('authentication.accountTip') }}
-      <span class="vben-link text-sm font-normal" @click="handleGo('/auth/register')">
-        {{ $t('authentication.createAccount') }}
-      </span>
-    </div>
+    <!-- Force Change Password Form -->
+    <ForceChangePassword v-else :user-id="expiredUserId" :temp-token="expiredTempToken"
+      @success="handlePasswordChangeSuccess" @cancel="handlePasswordChangeCancel" />
   </div>
 </template>
