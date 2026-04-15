@@ -1,13 +1,13 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { GenConfigResp } from '#/api';
+import type { GenConfigResp } from '#/apis';
 
 import { Page, useVbenDrawer, useVbenModal } from '@vben/common-ui';
 
 import { ElButton, ElSpace } from 'element-plus';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { listGenConfig } from '#/api';
+import { listGenConfig } from '#/apis';
 import { $t } from '#/locales';
 
 import { useGenConfigColumns, useGridFormSchema } from './data';

@@ -1,6 +1,6 @@
 <!-- eslint-disable eqeqeq -->
 <script setup lang="ts">
-import type { DictItemResp } from '#/api';
+import type { DictItemResp } from '#/apis';
 
 import { computed } from 'vue';
 

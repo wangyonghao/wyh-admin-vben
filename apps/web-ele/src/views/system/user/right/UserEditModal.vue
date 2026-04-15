@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { UserResp } from '#/api/system/user';
+import type { UserResp } from '#/apis/system/user';
 
 import { computed, ref } from 'vue';
 
@@ -9,7 +9,7 @@ import { $t } from '@vben/locales';
 import { ElMessage } from 'element-plus';
 
 import { useVbenForm } from '#/adapter/form';
-import { addUser, getUser, updateUser } from '#/api/system/user';
+import { addUser, getUser, updateUser } from '#/apis/system/user';
 import { defaultFormValueGetter, useBeforeCloseDiff } from '#/utils/popup';
 
 import { useUserEditFormSchema } from './UserData';

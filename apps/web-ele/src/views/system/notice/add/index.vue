@@ -18,8 +18,8 @@ import { $t } from '@vben/locales';
 import { ElMessage } from 'element-plus';
 
 import { useVbenForm } from '#/adapter/form';
-import { addNotice, getNotice, updateNotice } from '#/api/system/notice';
-import { listUserDict } from '#/api/system/user';
+import { addNotice, getNotice, updateNotice } from '#/apis/system/notice';
+import { listUserDict } from '#/apis/system/user';
 import { useDict } from '#/hooks';
 import { defaultFormValueGetter, useBeforeCloseDiff } from '#/utils/popup';
 

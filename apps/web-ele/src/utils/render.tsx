@@ -1,6 +1,6 @@
 import type { Component as ComponentType } from 'vue';
 
-import type { DictItemResp } from '#/api';
+import type { DictItemResp } from '#/apis';
 
 import { h } from 'vue';
 

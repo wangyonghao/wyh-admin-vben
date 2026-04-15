@@ -3,7 +3,7 @@ import type {
   VxeGridListeners,
   VxeTableGridOptions,
 } from '#/adapter/vxe-table';
-import type { DictResp } from '#/api';
+import type { DictResp } from '#/apis';
 
 import { ref } from 'vue';
 
@@ -23,7 +23,7 @@ import {
 import { ElDialog, ElMessage } from 'element-plus';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { clearDictCache, deleteDict, listDict } from '#/api';
+import { clearDictCache, deleteDict, listDict } from '#/apis';
 
 import { useDictColumns, useDictSearchFormFields } from '../data';
 import { emitter } from '../mitt';

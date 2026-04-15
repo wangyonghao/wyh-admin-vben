@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { NoticePreviewResp } from '#/api/system';
+import type { NoticeResp as NoticePreviewResp } from '#/apis/system/notice';
 
 import { computed, ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 
-import { getUnreadNoticeIds, getUserNotice } from '#/api/system/user-message';
+import { getUnreadNoticeIds, getUserNotice } from '#/apis/system/user-message';
 
 import AiEditor from './view/components/index.vue';
 

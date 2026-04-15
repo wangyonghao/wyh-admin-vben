@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { RoleResp } from '#/api/system/role';
+import type { RoleResp } from '#/apis/system/role';
 
 import { onMounted, ref } from 'vue';
 
@@ -26,7 +26,7 @@ import {
 
 import { ElMessage } from 'element-plus';
 
-import { deleteRole, listRole } from '#/api/system/role';
+import { deleteRole, listRole } from '#/apis/system/role';
 
 import { emitter } from '../mitt';
 import RoleEditModal from './RoleEditModal.vue';

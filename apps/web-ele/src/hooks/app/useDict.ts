@@ -1,6 +1,6 @@
 import { ref, toRefs } from 'vue';
 
-import { listCommonDict } from '#/api';
+import { listCommonDict } from '#/apis';
 import { useDictStore } from '#/store';
 
 const pendingRequests = new Map<string, Promise<any>>();

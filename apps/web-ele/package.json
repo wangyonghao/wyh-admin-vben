@@ -54,6 +54,9 @@
     "xe-utils": "^3.7.8"
   },
   "devDependencies": {
+    "postcss-antd-fixes": "catalog:",
+    "postcss-import": "catalog:",
+    "postcss-preset-env": "catalog:",
     "unplugin-auto-import": "^19.3.0",
     "unplugin-element-plus": "catalog:",
     "unplugin-vue-components": "^28.8.0"

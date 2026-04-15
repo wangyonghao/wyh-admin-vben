@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { MessageResp } from '#/api/system';
+import type { MessageResp } from '#/apis/system/user-message';
 
 import { computed, ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 
-import { getUserMessage } from '#/api/system/user-message';
+import { getUserMessage } from '#/apis/system/user-message';
 
 import AiEditor from './view/components/index.vue';
 

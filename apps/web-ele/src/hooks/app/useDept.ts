@@ -2,7 +2,7 @@ import type { TreeNodeData } from 'element-plus';
 
 import { ref } from 'vue';
 
-import { listDeptDictTree } from '#/api';
+import { listDeptDictTree } from '#/apis';
 
 /** 部门模块 */
 export function useDept(options?: { onSuccess?: () => void }) {

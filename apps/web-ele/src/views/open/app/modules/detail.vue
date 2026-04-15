@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { OpenAppApi } from '#/api/open/app';
+import type { OpenAppApi } from '#/apis/open/app';
 
 import { computed, ref } from 'vue';
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { MenuResp } from '#/api';
-import type { TenantPackageResp } from '#/api/tenant/package';
+import type { MenuResp } from '#/apis';
+import type { TenantPackageResp } from '#/apis/tenant/package';
 import type { MenuSelectTable } from '#/components/tree';
 
 import { computed, nextTick, ref } from 'vue';
@@ -18,7 +18,7 @@ import {
   getTenantPackage,
   listTenantPackageMenu,
   updateTenantPackage,
-} from '#/api/tenant/package';
+} from '#/apis/tenant/package';
 import { defaultFormValueGetter, useBeforeCloseDiff } from '#/utils/popup';
 
 import { usePackageEditFormSchema } from './PackageData';

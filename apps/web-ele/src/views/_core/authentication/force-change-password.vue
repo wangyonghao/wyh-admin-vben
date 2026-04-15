@@ -12,7 +12,7 @@ import { encryptByRsa } from '@vben/utils';
 
 import { ElMessage } from 'element-plus';
 
-import { forceChangePassword } from '#/api';
+import { authApi } from '#/apis/auth';
 
 defineOptions({ name: 'ForceChangePassword' });
 
@@ -117,7 +117,7 @@ const handleSubmit = async (event?: Event) => {
   try {
     submitting.value = true;
 
-    const { token } = await forceChangePassword({
+    const { token } = await authApi.forceChangePassword({
       userId: props.userId,
       tempToken: props.tempToken,
       oldPassword: encryptByRsa(oldPassword.value) || '',

@@ -1,19 +1,9 @@
+import { ref } from 'vue';
+
 import { acceptHMRUpdate, defineStore } from 'pinia';
 
-interface BasicUserInfo {
+interface UserProfile {
   [key: string]: any;
-  /**
-   * 头像
-   */
-  avatar: string;
-  /**
-   * 用户昵称
-   */
-  realName: string;
-  /**
-   * 用户角色
-   */
-  roles?: string[];
   /**
    * 用户id
    */
@@ -22,39 +12,43 @@ interface BasicUserInfo {
    * 用户名
    */
   username: string;
-}
-
-interface AccessState {
   /**
-   * 用户信息
+   * 头像
    */
-  userInfo: BasicUserInfo | null;
+  avatar: string;
+  /**
+   * 用户昵称
+   */
+  nickname: string;
   /**
    * 用户角色
    */
-  userRoles: string[];
+  roles?: string[];
 }
 
 /**
  * @zh_CN 用户信息相关
  */
-export const useUserStore = defineStore('core-user', {
-  actions: {
-    setUserInfo(userInfo: BasicUserInfo | null) {
-      // 设置用户信息
-      this.userInfo = userInfo;
-      // 设置角色信息
-      const roles = userInfo?.roles ?? [];
-      this.setUserRoles(roles);
-    },
-    setUserRoles(roles: string[]) {
-      this.userRoles = roles;
-    },
-  },
-  state: (): AccessState => ({
-    userInfo: null,
-    userRoles: [],
-  }),
+export const useUserStore = defineStore('core-user', () => {
+  // 用户信息
+  const userInfo = ref<UserProfile | null>(null);
+  // 用户token
+  const accessToken = ref<string>('');
+
+  function setAccessToken(token: string) {
+    accessToken.value = token;
+  }
+
+  function setUserInfo(info: UserProfile | null) {
+    userInfo.value = info;
+  }
+
+  return {
+    userInfo,
+    accessToken,
+    setUserInfo,
+    setAccessToken,
+  };
 });
 
 // 解决热更新问题

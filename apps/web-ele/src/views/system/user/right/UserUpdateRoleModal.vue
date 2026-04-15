@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { UserResp } from '#/api';
+import type { UserResp } from '#/apis/system/user';
 
 import { computed, ref } from 'vue';
 
@@ -8,7 +8,7 @@ import { $t } from '@vben/locales';
 
 import { ElCheckbox, ElCheckboxGroup, ElMessage } from 'element-plus';
 
-import { updateUserRole } from '#/api/system/user';
+import { updateUserRole } from '#/apis/system/user';
 import { useRole } from '#/hooks/app/useRole';
 
 const emits = defineEmits(['success']);

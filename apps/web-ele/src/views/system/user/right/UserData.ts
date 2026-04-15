@@ -3,7 +3,7 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { getPopupContainer } from '@vben/utils';
 
-import { listDeptDictTree, listRoleDict } from '#/api';
+import { listDeptDictTree, listRoleDict } from '#/apis';
 import { $t } from '#/locales';
 
 export function useUserEditFormSchema(): VbenFormSchema[] {

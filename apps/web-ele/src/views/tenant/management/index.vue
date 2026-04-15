@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { TenantQuery, TenantResp } from '#/api';
+import type { TenantQuery, TenantResp } from '#/apis';
 
 import { Page, useVbenDrawer, useVbenModal } from '@vben/common-ui';
 import { $t } from '@vben/locales';
@@ -8,7 +8,7 @@ import { $t } from '@vben/locales';
 import { ElButton, ElMessage, ElPopconfirm, ElSpace } from 'element-plus';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { deleteTenant, exportTenant, listTenant } from '#/api';
+import { deleteTenant, exportTenant, listTenant } from '#/apis';
 import { useDownload } from '#/hooks/app/useDownload';
 
 import {

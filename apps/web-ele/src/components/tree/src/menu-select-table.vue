@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { MenuResp } from '#/api';
+import type { MenuResp } from '#/apis';
 import type { ID } from '#/types/api';
 
 import { nextTick, ref, watch } from 'vue';

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TreeNodeData } from 'element-plus';
 
-import type { GeneratePreviewResp } from '#/api/code/generator';
+import type { GeneratePreviewResp } from '#/apis/code';
 
 import { computed, ref, watch } from 'vue';
 
@@ -36,7 +36,7 @@ import {
   ElTreeV2,
 } from 'element-plus';
 
-import { downloadCode, generateCode, genPreview } from '#/api/code/generator';
+import { downloadCode, generateCode, genPreview } from '#/apis/code';
 
 const { copy, copied } = useClipboard();
 

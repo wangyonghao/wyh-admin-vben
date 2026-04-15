@@ -1,5 +1,5 @@
 import type { VxeGridProps } from '#/adapter/vxe-table';
-import type { MenuResp } from '#/api';
+import type { MenuResp } from '#/apis';
 import type { ID } from '#/types/api';
 
 import { h, markRaw } from 'vue';

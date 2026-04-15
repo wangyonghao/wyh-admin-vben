@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { RoleDetailResp } from '#/api/system/role';
+import type { RoleDetailResp } from '#/apis/system/role';
 
 import { ref } from 'vue';
 
@@ -10,7 +10,7 @@ import { VbenButton } from '@vben-core/shadcn-ui';
 
 import { ElMessage } from 'element-plus';
 
-import { updateRolePermission } from '#/api/system/role';
+import { updateRolePermission } from '#/apis/system/role';
 import { MenuSelectTable } from '#/components/tree';
 
 interface Props {

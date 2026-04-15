@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { DictItemResp } from '#/api';
-import type { JobResp } from '#/api/schedule';
+import type { DictItemResp } from '#/apis';
+import type { JobResp } from '#/apis/schedule';
 
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -30,7 +30,7 @@ import {
   listJob,
   triggerJob,
   updateJobStatus,
-} from '#/api/schedule';
+} from '#/apis/schedule';
 import { DictTag } from '#/components/dict';
 import { useDict } from '#/hooks';
 

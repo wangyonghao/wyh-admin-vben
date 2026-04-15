@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { ImageCaptchaResp } from '#/api';
+import type { ImageCaptchaResp } from '#/apis';
 
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -14,7 +14,7 @@ import {
 import { AuthenticationThirdPartyLogin, z } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
-import { getImageCaptcha } from '#/api';
+import { getImageCaptcha } from '#/apis';
 import { useAuthStore } from '#/store';
 import { useAccessStore } from '@vben/stores';
 
@@ -151,7 +151,7 @@ const handleSubmit = async (event?: Event) => {
     );
 
     // Call auth login
-    const result = await authStore.authLogin(loginData);
+    const result = await authStore.login(loginData);
 
     // Check if password expired
     if (result.passwordExpired) {

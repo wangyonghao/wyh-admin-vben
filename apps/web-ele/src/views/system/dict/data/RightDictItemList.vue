@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { DictItemResp } from '#/api';
+import type { DictItemResp } from '#/apis';
 
 import { ref } from 'vue';
 
@@ -23,7 +23,7 @@ import {
 } from 'element-plus';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { deleteDictItem, listDictItem } from '#/api';
+import { deleteDictItem, listDictItem } from '#/apis';
 
 import { useDictItemColumns, useDictItemSearchFormFields } from '../data';
 import { emitter } from '../mitt';

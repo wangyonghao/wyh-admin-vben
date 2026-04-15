@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { OpenAppApi } from '#/api/open/app';
+import type { OpenAppApi } from '#/apis/open/app';
 
 import { computed, ref } from 'vue';
 
@@ -7,7 +7,7 @@ import { useVbenDrawer } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
 import { useVbenForm } from '#/adapter/form';
-import { addApp, updateApp } from '#/api/open/app';
+import { addApp, updateApp } from '#/apis/open/app';
 
 import { useFormSchema } from '../data';
 

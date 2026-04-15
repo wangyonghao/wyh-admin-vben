@@ -2,7 +2,7 @@
 import type { TreeNodeData } from 'element-plus';
 
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { UserQuery, UserResp } from '#/api/system/user';
+import type { UserQuery, UserResp } from '#/apis/system/user';
 
 import { nextTick, ref } from 'vue';
 
@@ -38,7 +38,7 @@ import {
 } from 'element-plus';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { deleteUser, exportUser, listUser } from '#/api/system/user';
+import { deleteUser, exportUser, listUser } from '#/apis/system/user';
 import { useDownload } from '#/hooks/app/useDownload';
 
 import { emitter } from '../mitt';

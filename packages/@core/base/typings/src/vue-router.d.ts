@@ -79,7 +79,7 @@ interface RouteMeta {
    * 忽略权限，直接可以访问
    * @default false
    */
-  ignoreAccess?: boolean;
+  requiresAuth?: boolean;
   /**
    * 开启KeepAlive缓存
    */

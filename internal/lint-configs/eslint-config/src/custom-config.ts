@@ -45,7 +45,7 @@ const customConfig: Linter.Config[] = [
         {
           patterns: [
             {
-              group: ['#/api/*'],
+              group: ['#/apis/*'],
               message:
                 'The #/api package cannot be imported, please use the @core package itself',
             },

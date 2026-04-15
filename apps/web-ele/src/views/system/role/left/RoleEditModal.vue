@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { RoleResp } from '#/api/system/role';
+import type { RoleResp } from '#/apis/system/role';
 
 import { computed, ref } from 'vue';
 
@@ -9,7 +9,7 @@ import { $t } from '@vben/locales';
 import { ElMessage } from 'element-plus';
 
 import { useVbenForm } from '#/adapter/form';
-import { addRole, getRole, updateRole } from '#/api/system/role';
+import { addRole, getRole, updateRole } from '#/apis/system/role';
 import { defaultFormValueGetter, useBeforeCloseDiff } from '#/utils/popup';
 
 import { useRoleEditFormSchema } from './RoleData';

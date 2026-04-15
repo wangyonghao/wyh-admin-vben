@@ -6,7 +6,7 @@ import type {
   FieldConfigResp,
   GenConfigResp,
   GeneratorConfigResp,
-} from '#/api';
+} from '#/apis';
 import type { LabelValueState } from '#/types/global';
 
 import { computed, ref } from 'vue';
@@ -32,7 +32,7 @@ import {
   listFieldConfig,
   listFieldConfigDict,
   saveGenConfig,
-} from '#/api';
+} from '#/apis';
 import { useDict } from '#/hooks/app';
 import { $t } from '#/locales';
 

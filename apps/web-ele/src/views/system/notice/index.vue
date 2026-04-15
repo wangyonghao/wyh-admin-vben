@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { NoticeQuery, NoticeResp } from '#/api/system/notice';
+import type { NoticeQuery, NoticeResp } from '#/apis/system/notice';
 
 import { useRouter } from 'vue-router';
 
@@ -21,7 +21,7 @@ import {
 import { ElMessage } from 'element-plus';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { deleteNotice, exportNotice, listNotice } from '#/api/system/notice';
+import { deleteNotice, exportNotice, listNotice } from '#/apis/system/notice';
 import { useDict } from '#/hooks';
 import { useDownload } from '#/hooks/app/useDownload';
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { NoticeResp } from '#/api/system/notice';
+import type { NoticeResp } from '#/apis/system/notice';
 
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -16,7 +16,7 @@ import { MsArrowBackIos } from '@vben/icons';
 
 import { ElSpace } from 'element-plus';
 
-import { getNotice } from '#/api/system/notice';
+import { getNotice } from '#/apis/system/notice';
 
 import RichText from './components/index.vue';
 

@@ -2,7 +2,7 @@
 import type { VbenFormSchema } from '@vben/common-ui';
 
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { MessageResp } from '#/api/system/user-message';
+import type { MessageResp } from '#/apis/system/user-message';
 
 import { ref } from 'vue';
 
@@ -17,7 +17,7 @@ import {
   listMessage,
   readAllMessage,
   readMessage,
-} from '#/api/system/user-message';
+} from '#/apis/system/user-message';
 import { DictTag } from '#/components/dict';
 import { useDict } from '#/hooks';
 import mittBus from '#/utils/mitt';

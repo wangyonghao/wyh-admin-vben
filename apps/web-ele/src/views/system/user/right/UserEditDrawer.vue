@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TreeNodeData } from 'element-plus';
 
-import type { UserResp } from '#/api/system/user';
+import type { UserResp } from '#/apis/system/user';
 
 import { computed, ref } from 'vue';
 
@@ -12,8 +12,8 @@ import { encryptByRsa, getPopupContainer } from '@vben/utils';
 import { ElMessage } from 'element-plus';
 
 import { useVbenForm } from '#/adapter/form';
-import { listDeptDictTree } from '#/api';
-import { addUser, getUser, updateUser } from '#/api/system/user';
+import { listDeptDictTree } from '#/apis';
+import { addUser, getUser, updateUser } from '#/apis/system/user';
 import { defaultFormValueGetter, useBeforeCloseDiff } from '#/utils/popup';
 
 import { useUserEditFormSchema } from './UserData';

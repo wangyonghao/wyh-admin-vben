@@ -2,7 +2,7 @@ import type { VxeTableGridOptions } from '@vben/plugins/vxe-table';
 
 import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
-import type { OpenAppApi } from '#/api/open/app';
+import type { OpenAppApi } from '#/apis/open/app';
 
 import { $t } from '@vben/locales';
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { CascaderNode, TreeNodeData } from 'element-plus';
 
-import type { DeptResp } from '#/api';
+import type { DeptResp } from '#/apis';
 
 import { computed, ref } from 'vue';
 
@@ -12,7 +12,7 @@ import { getPopupContainer } from '@vben/utils';
 import { ElMessage } from 'element-plus';
 
 import { useVbenForm } from '#/adapter/form';
-import { addDept, getDept, listDept, updateDept } from '#/api';
+import { addDept, getDept, listDept, updateDept } from '#/apis';
 import { defaultFormValueGetter, useBeforeCloseDiff } from '#/utils/popup';
 
 import { useDeptFormSchema } from './data';

@@ -14,7 +14,7 @@ import { Card, CardContent, ColPage, RowPage } from '@vben/common-ui';
 import {
   getUnreadMessageCount,
   getUnreadNoticeCount,
-} from '#/api/system/user-message';
+} from '#/apis/system/user-message';
 import { useDevice } from '#/hooks';
 import mittBus from '#/utils/mitt';
 

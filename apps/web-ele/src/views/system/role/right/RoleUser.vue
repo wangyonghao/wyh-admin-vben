@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { UserResp } from '#/api/system/user';
+import type { UserResp } from '#/apis/system/user';
 
 import { ref, watch } from 'vue';
 
@@ -22,7 +22,7 @@ import {
 import { ElAvatar, ElMessage } from 'element-plus';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { listRoleUser, unassignFromUsers } from '#/api';
+import { listRoleUser, unassignFromUsers } from '#/apis';
 
 import RoleUserAssign from './RoleUserAssign.vue';
 

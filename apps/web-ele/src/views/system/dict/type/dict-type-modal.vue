@@ -6,7 +6,7 @@ import { $t } from '@vben/locales';
 import { cloneDeep } from '@vben/utils';
 
 import { useVbenForm } from '#/adapter/form';
-import { addDict, getDict, updateDict } from '#/api';
+import { addDict, getDict, updateDict } from '#/apis';
 import { defaultFormValueGetter, useBeforeCloseDiff } from '#/utils/popup';
 
 import { dictTypeFormSchema } from '../data';

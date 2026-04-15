@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { JobLogResp } from '#/api/schedule';
-import type { DictItemResp } from '#/api/system';
+import type { JobLogResp } from '#/apis/schedule';
+import type { DictItemResp } from '#/apis/system';
 
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
@@ -12,7 +12,7 @@ import { $t } from '@vben/locales';
 import { ElButton, ElMessage, ElPopconfirm, ElSpace } from 'element-plus';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { listGroup, listJobLog, retryJob, stopJob } from '#/api/schedule';
+import { listGroup, listJobLog, retryJob, stopJob } from '#/apis/schedule';
 import { DictTag } from '#/components/dict';
 import { useDict } from '#/hooks';
 

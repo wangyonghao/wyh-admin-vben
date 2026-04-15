@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { RoleDetailResp } from '#/api/system/role';
+import type { RoleDetailResp } from '#/apis/system/role';
 
 import { nextTick, ref } from 'vue';
 
@@ -10,7 +10,7 @@ import { eachTree } from '@vben/utils';
 
 import { Tabs, TabsList, TabsTrigger, VbenButton } from '@vben-core/shadcn-ui';
 
-import { getRole, listRolePermissionTree } from '#/api/system/role';
+import { getRole, listRolePermissionTree } from '#/apis/system/role';
 
 import { emitter } from '../mitt';
 import RolePermission from './RolePermission.vue';

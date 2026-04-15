@@ -115,8 +115,8 @@ The project comes with a default basic request configuration based on `axios`, p
 #### GET Request
 
 ```ts
-import { requestClient } from '#/api/request';
-
+import { requestClient } from '#/apis/request';
+```
 export async function getUserInfoApi() {
   return requestClient.get<UserInfo>('/user');
 }

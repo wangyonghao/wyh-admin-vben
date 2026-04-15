@@ -28,7 +28,7 @@ export const dateRangeShortcuts = [
   },
 ];
 
-export const datetimeFutrueShortcuts = [
+export const datetimeFutureShortcuts = [
   {
     text: 'Today',
     value: new Date(),

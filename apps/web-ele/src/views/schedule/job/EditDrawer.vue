@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { JobResp } from '#/api/schedule';
+import type { JobResp } from '#/apis/schedule';
 import type { LabelValueState } from '#/types/global';
 
 import { computed, ref } from 'vue';
@@ -12,7 +12,7 @@ import { encryptByRsa } from '@vben/utils';
 import { ElButton, ElInput, ElInputNumber, ElMessage } from 'element-plus';
 
 import { useVbenForm } from '#/adapter/form';
-import { addJob, listGroup, updateJob } from '#/api/schedule';
+import { addJob, listGroup, updateJob } from '#/apis/schedule';
 import CronModal from '#/components/GenCron/CronModal/index.vue';
 import { useDict } from '#/hooks';
 import { defaultFormValueGetter, useBeforeCloseDiff } from '#/utils/popup';

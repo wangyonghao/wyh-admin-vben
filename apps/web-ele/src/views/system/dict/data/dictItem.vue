@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DictItemResp } from '#/api';
+import type { DictItemResp } from '#/apis';
 
 import { computed, ref } from 'vue';
 
@@ -9,7 +9,7 @@ import { $t } from '@vben/locales';
 import { ElMessage } from 'element-plus';
 
 import { useVbenForm } from '#/adapter/form';
-import { addDictItem, getDictItem, updateDictItem } from '#/api';
+import { addDictItem, getDictItem, updateDictItem } from '#/apis';
 
 import { dictItemFormSchema } from '../data';
 

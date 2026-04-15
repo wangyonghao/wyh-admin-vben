@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { OnlineUserResp } from '#/api/monitor/online';
+import type { OnlineUserResp } from '#/apis/monitor/online';
 
 import { Page } from '@vben/common-ui';
 import { $t } from '@vben/locales';
@@ -10,7 +10,7 @@ import { useAccessStore } from '@vben/stores';
 import { ElButton, ElMessage, ElPopconfirm, ElSpace } from 'element-plus';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { kickout, listOnlineUser } from '#/api/monitor/online';
+import { kickout, listOnlineUser } from '#/apis/monitor/online';
 import { dateRangeShortcuts } from '#/utils/dateTools';
 
 function usePackageGridSearchFormSchema(): VbenFormSchema[] {

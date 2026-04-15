@@ -1,14 +1,6 @@
-import {
-  createRouter,
-  createWebHashHistory,
-  createWebHistory,
-} from 'vue-router';
-
-import { resetStaticRoutes } from '@vben/utils';
-
+import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router';
 import { createRouterGuard } from './guard';
 import { routes } from './routes';
-
 /**
  *  @zh_CN 创建vue-router实例
  */
@@ -29,9 +21,7 @@ const router = createRouter({
   // strict: true,
 });
 
-const resetRoutes = () => resetStaticRoutes(router, routes);
-
 // 创建路由守卫
 createRouterGuard(router);
 
-export { resetRoutes, router };
+export default router;

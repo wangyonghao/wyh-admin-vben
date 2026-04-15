@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { MenuResp } from '#/api';
+import type { MenuResp } from '#/apis';
 
 import { ref } from 'vue';
 
@@ -19,7 +19,7 @@ import {
 } from '@vben-core/shadcn-ui';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { clearMenuCache, deleteMenu, listMenu } from '#/api';
+import { clearMenuCache, deleteMenu, listMenu } from '#/apis';
 import { $t } from '@vben/locales';
 
 import { useMenuColumns, useMenuSearchFormFields } from './data';

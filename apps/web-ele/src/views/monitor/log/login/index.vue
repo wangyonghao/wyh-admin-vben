@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { LogResp } from '#/api/monitor/log';
+import type { LogResp } from '#/apis/monitor/log';
 
 import { Badge } from '@vben-core/shadcn-ui';
 import { $t } from '@vben/locales';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { listLog } from '#/api/monitor/log';
+import { listLog } from '#/apis/monitor/log';
 import { dateRangeShortcuts } from '#/utils/dateTools';
 
 function usePackageGridSearchFormSchema(): VbenFormSchema[] {

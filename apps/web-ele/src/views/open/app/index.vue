@@ -3,7 +3,7 @@ import type {
   OnActionClickParams,
   VxeTableGridOptions,
 } from '#/adapter/vxe-table';
-import type { OpenAppApi } from '#/api';
+import type { OpenAppApi } from '#/apis';
 
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { $t } from '@vben/locales';
@@ -17,7 +17,7 @@ import {
   getAppList,
   getSecretKey,
   resetSecretKey,
-} from '#/api';
+} from '#/apis';
 
 import { useColumns, useGridFormSchema } from './data';
 import AppDetail from './modules/detail.vue';

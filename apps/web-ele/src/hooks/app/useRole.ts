@@ -2,7 +2,7 @@ import type { LabelValueState } from '#/types/global';
 
 import { ref } from 'vue';
 
-import { listRoleDict } from '#/api/system/role';
+import { listRoleDict } from '#/apis/system/role';
 
 /** 角色模块 */
 export function useRole(options?: { onSuccess?: () => void }) {

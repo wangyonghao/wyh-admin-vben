@@ -5,7 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { Card, CardHeader, CardTitle, Page } from '@vben/common-ui';
 import { useTabs } from '@vben/hooks';
 
-import { getUserNotice } from '#/api/system/user-message';
+import { getUserNotice } from '#/apis/system/user-message';
 import { useResetReactive } from '#/hooks';
 
 import AiEditor from './components/index.vue';

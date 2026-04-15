@@ -2,7 +2,7 @@
 import type { VbenFormSchema } from '@vben/common-ui';
 
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { SmsLogQuery, SmsLogResp } from '#/api';
+import type { SmsLogQuery, SmsLogResp } from '#/apis/system/smsLog';
 
 import { Page } from '@vben/common-ui';
 import { $t } from '@vben/locales';
@@ -10,7 +10,7 @@ import { $t } from '@vben/locales';
 import { ElButton, ElMessage, ElPopconfirm, ElSpace } from 'element-plus';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { deleteSmsLog, exportSmsLog, listSmsLog } from '#/api/system/smsLog';
+import { deleteSmsLog, exportSmsLog, listSmsLog } from '#/apis/system/smsLog';
 import { useDownload } from '#/hooks/app/useDownload';
 
 function useSmsLogGridSearchFormSchema(): VbenFormSchema[] {

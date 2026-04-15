@@ -5,10 +5,104 @@ import { preferences } from '@vben/preferences';
 import { useAccessStore, useUserStore } from '@vben/stores';
 import { startProgress, stopProgress } from '@vben/utils';
 
-import { accessRoutes, coreRouteNames } from '#/router/routes';
 import { useAuthStore } from '#/store';
 
-import { generateAccess } from './access';
+import type { RouteItem } from '#/apis';
+
+import { IFrameView } from '@vben/layouts';
+import type { ComponentRecordType } from '@vben/types';
+
+// 动态导入所有页面组件
+const pageMap: ComponentRecordType = import.meta.glob('/src/views/**/*.vue');
+
+
+// 已添加的动态路由
+const addedRouteNames = new Set<string>();
+
+/**
+ * 根据用户菜单动态添加新路由
+ */
+export function generateRoutes(router:Router, menus: RouteItem[]) {
+  const addRoutes = (menuList: RouteItem[]) => {
+
+    for (const menu of menuList) {
+      if (menu.type === 2 && menu.path) {
+        const routeName = 'dynamic-' + menu.id
+
+        // 检查是否已经有同路径的静态路由
+        const menuPath = menu.path.startsWith('/') ? menu.path.slice(1) : menu.path
+        
+        // const existingRoutes = router.getRoutes()
+        // const pathExists = existingRoutes.some(r => r.path === '/' + menuPath || r.path === menuPath)
+        const pathExists = router.hasRoute(routeName);
+        if (pathExists) {
+          console.log(`[动态路由] 跳过(已存在): ${menuPath}` + ", " + router.getRoutes().length )
+          continue
+        }
+        if (addedRouteNames.has(routeName)) {
+          console.log(`[动态路由] 跳过(已添加): ${menuPath}`)
+          continue
+        }
+
+        // 判断菜单是否是外链
+        if(/^https?:\/\//.test(menu.path)){
+          router.addRoute('Root',{
+            path: menuPath,
+            name: routeName,
+            component: IFrameView,
+            meta: {
+              icon: menu.icon?.includes(':') ? menu.icon : `svg:${menu.icon}`,
+              keepAlive: !menu.isCache,
+              title: menu.name,
+              link: menu.path,
+            }
+          })
+          addedRouteNames.add(routeName)
+          console.log(`[动态路由] ✓ 添加外链成功: ${menuPath} -> ${menu.component}`)
+        }else if(menu.component){
+            // 普通菜单，加载组件
+          const componentName = menu.component.startsWith('/') ? menu.component.slice(1) : menu.component
+          const componentPath = `/src/views/${componentName}.vue`
+
+          const component = pageMap[componentPath] ? pageMap[componentPath] : () => import('#/views/_core/fallback/not-found.vue');
+
+          router.addRoute('Root', {
+              path: menuPath,
+              name: routeName,
+              component: component,
+              meta: {
+                title: menu.name,
+                icon: menu.icon,
+                permission: menu.permission
+              }
+            })
+            addedRouteNames.add(routeName)
+            console.log(`[动态路由] ✓ 添加成功: ${menuPath}`)
+        }
+      }
+
+      if (menu.children && menu.children.length > 0) {
+        addRoutes(menu.children)
+      }
+    }
+  };
+  console.log('[动态路由] 开始处理菜单:', menus)
+  
+  addRoutes(menus)
+  console.log('[动态路由] 当前所有路由:', router.getRoutes().map(r => r.path))
+}
+
+export function resetRouter(router:Router) {
+  console.log('[动态路由] 删除路由 before:', router.getRoutes().length)
+  addedRouteNames.forEach(name => {
+    if (router.hasRoute(name)) {
+      router.removeRoute(name)
+      console.log('[动态路由] 删除路由:', name)
+    }
+  })
+  addedRouteNames.clear()
+  console.log('[动态路由] 删除路由 after:', router.getRoutes().length)
+};
 
 /**
  * 通用守卫配置
@@ -50,39 +144,14 @@ function setupAccessGuard(router: Router) {
     const userStore = useUserStore();
     const authStore = useAuthStore();
 
-    // 基本路由，这些路由不需要进入权限拦截
-    if (coreRouteNames.includes(to.name as string)) {
-      if (to.path === LOGIN_PATH && accessStore.accessToken) {
-        return decodeURIComponent(
-          (to.query?.redirect as string) ||
-            userStore.userInfo?.homePath ||
-            preferences.app.defaultHomePath,
-        );
-      }
+    // 这些路由不需要进入权限拦截
+    if (to.meta.requiresAuth === false) {
       return true;
     }
 
     // accessToken 检查
-    if (!accessStore.accessToken) {
-      // 明确声明忽略权限访问权限，则可以访问
-      if (to.meta.ignoreAccess) {
-        return true;
-      }
-
-      // 没有访问权限，跳转登录页面
-      if (to.fullPath !== LOGIN_PATH) {
-        return {
-          path: LOGIN_PATH,
-          // 如不需要，直接删除 query
-          query:
-            to.fullPath === preferences.app.defaultHomePath
-              ? {}
-              : { redirect: encodeURIComponent(to.fullPath) },
-          // 携带当前跳转的页面，登录后重新跳转该页面
-          replace: true,
-        };
-      }
-      return to;
+    if (!accessStore.accessToken && to.fullPath !== LOGIN_PATH) {
+      return { path: LOGIN_PATH, query: { redirect: encodeURIComponent(to.fullPath) }, replace: true };
     }
 
     // 是否已经生成过动态路由
@@ -92,20 +161,14 @@ function setupAccessGuard(router: Router) {
 
     // 生成路由表
     // 当前登录用户拥有的角色标识列表
-    const userInfo = userStore.userInfo || (await authStore.fetchUserInfo());
-    const userRoles = userInfo.roles ?? [];
-
-    // 生成菜单和路由
-    const { accessibleMenus, accessibleRoutes } = await generateAccess({
-      roles: userRoles,
-      router,
-      // 则会在菜单中显示，但是访问会被重定向到403
-      routes: accessRoutes,
-    });
-
-    // 保存菜单信息和路由信息
-    accessStore.setAccessMenus(accessibleMenus);
-    accessStore.setAccessRoutes(accessibleRoutes);
+    let userInfo;
+    try{
+      userInfo = userStore.userInfo || (await authStore.fetchUserInfo());
+      generateRoutes(router, userInfo.menus);
+    }catch(Error){
+      alert("用户菜单加载失败！！！");
+      return { path: LOGIN_PATH, query: { redirect: encodeURIComponent(to.fullPath) }, replace: true };
+    }
     accessStore.setIsAccessChecked(true);
     const redirectPath = (from.query.redirect ??
       (to.path === preferences.app.defaultHomePath

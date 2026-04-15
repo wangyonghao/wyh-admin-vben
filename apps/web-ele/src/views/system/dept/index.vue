@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { DeptResp } from '#/api/system/dept';
+import type { DeptResp } from '#/apis/system/dept';
 
 import { ref, watch } from 'vue';
 
@@ -23,7 +23,7 @@ import {
 import { ElMessage, ElTag } from 'element-plus';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { deleteDept, exportDept, listDept } from '#/api/system/dept';
+import { deleteDept, exportDept, listDept } from '#/apis/system/dept';
 import { useDownload } from '#/hooks/app/useDownload';
 
 import { useDeptColumns } from './data';

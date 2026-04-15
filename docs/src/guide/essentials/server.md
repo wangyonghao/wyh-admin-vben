@@ -145,8 +145,8 @@ type ExtendOptions<T = any> = {
 #### GET 请求
 
 ```ts
-import { requestClient } from '#/api/request';
-
+import { requestClient } from '#/apis/request';
+```
 export async function getUserInfoApi() {
   return requestClient.get<UserInfo>('/user');
 }

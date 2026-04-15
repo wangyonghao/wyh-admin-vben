@@ -1,52 +1,22 @@
 import type {
   ComponentRecordType,
   GenerateMenuAndRoutesOptions,
+  MenuRecordRaw,
   RouteRecordStringComponent,
 } from '@vben/types';
 
-import type { RouteItem } from '#/api';
+import type { RouteItem } from '#/apis';
 
 import { generateAccessible } from '@vben/access';
 import { preferences } from '@vben/preferences';
 
 import { ElMessage } from 'element-plus';
 
-import { getUserRoute } from '#/api';
+import { authApi } from '#/apis/auth';
 import { BasicLayout, IFrameView } from '#/layouts';
 import { $t } from '#/locales';
 
 const forbiddenComponent = () => import('#/views/_core/fallback/forbidden.vue');
-
-// /**
-//  * 后端返回的meta有时候不包括需要的信息 比如activePath等
-//  * 在这里定义映射
-//  */
-// const routeMetaMapping: Record<string, Omit<RouteMeta, 'title'>> = {
-//   '/system/role-auth/user/:roleId': {
-//     activePath: '/system/role',
-//     requireHomeRedirect: true,
-//   },
-
-//   '/system/oss-config/index': {
-//     activePath: '/system/oss',
-//     requireHomeRedirect: true,
-//   },
-
-//   '/tool/gen-edit/index/:tableId': {
-//     activePath: '/tool/gen',
-//     requireHomeRedirect: true,
-//   },
-
-//   '/workflow/design/index': {
-//     activePath: '/workflow/processDefinition',
-//     requireHomeRedirect: true,
-//   },
-
-//   '/workflow/leaveEdit/index': {
-//     activePath: '/demo/leave',
-//     requireHomeRedirect: true,
-//   },
-// };
 
 /**
  * 后台路由转vben路由
@@ -59,9 +29,11 @@ function backMenuToVbenMenu(
   parentPath = '',
 ): RouteRecordStringComponent[] {
   const resultList: RouteRecordStringComponent[] = [];
+  const vbenMenus: MenuRecordRaw[] = [];
   menuList.forEach((menu) => {
-    // 根目录为菜单形式
-    // 固定有一个children  children为当前菜单
+    // 1目录 2菜单 3按钮 4内嵌 5外链
+    // 只处理菜单类型(type=2)，且有 path
+   
     if (menu.path === '/' && menu.children && menu.children.length === 1) {
       if (!menu.children || !menu.children[0]) {
         return;
@@ -79,8 +51,6 @@ function backMenuToVbenMenu(
 
       // 取子路径作为父级路径
       const path = menu.children[0].path;
-      // 取子菜单的meta作为当前菜单的meta
-      // menu.meta = menu.children[0].meta;
       // 由于在一级路由 父级路径需要加上/
       menu.path = `/${path}`;
       menu.component = 'RootMenu';
@@ -90,10 +60,7 @@ function backMenuToVbenMenu(
 
     // 外链: http开头 & 组件为Layout || ParentView
     // 正则判断是否为http://或者https://开头
-    if (
-      /^https?:\/\//.test(menu.path) &&
-      (menu.component === 'Layout' || menu.component === 'ParentView')
-    ) {
+    if (/^https?:\/\//.test(menu.path) && (menu.component === 'Layout' || menu.component === 'ParentView')) {
       menu.component = 'Link';
     }
 
@@ -103,8 +70,7 @@ function backMenuToVbenMenu(
     }
 
     /**
-     * 拼接path
-     * menu.path为''(根目录路由) 则不拼接
+     * 拼接path, menu.path为''(根目录路由) 则不拼接
      */
     if (parentPath && menu.path) {
       menu.path = `${menu.path}`;
@@ -115,7 +81,6 @@ function backMenuToVbenMenu(
       component: menu.component,
       meta: {
         // 当前路由不在菜单显示 但是可以通过链接访问
-        // 不可访问的路由由后端控制隐藏(不返回对应路由)
         hideInMenu: menu.isHidden,
         icon: menu.icon?.includes(':') ? menu.icon : `svg:${menu.icon}`,
         keepAlive: !menu.isCache,
@@ -125,27 +90,6 @@ function backMenuToVbenMenu(
       path: menu.path,
       redirect: menu.redirect,
     };
-
-    // 处理meta映射
-    // if (Object.keys(routeMetaMapping).includes(vbenRoute.path)) {
-    //   const routeMeta = routeMetaMapping[vbenRoute.path];
-    //   if (routeMeta) {
-    //     vbenRoute.meta = {
-    //       ...vbenRoute.meta,
-    //       ...(routeMeta as RouteMeta),
-    //     };
-    //   }
-    // }
-
-    // 添加路由参数信息
-    // if (menu.query) {
-    //   try {
-    //     const query = JSON.parse(menu.query);
-    //     vbenRoute.meta && (vbenRoute.meta.query = query);
-    //   } catch {
-    //     console.error('错误的路由参数类型, 必须为[json]格式');
-    //   }
-    // }
 
     /**
      * 处理不同组件
@@ -222,11 +166,7 @@ function backMenuToVbenMenu(
     resultList.push(vbenRoute);
 
     // 如果当前路由有commponent 则给提升子路由到当前路由同级
-    if (
-      !!vbenRoute.component &&
-      typeof vbenRoute.component === 'string' &&
-      vbenRoute.component.startsWith('/')
-    ) {
+    if (!vbenRoute.component && typeof vbenRoute.component === 'string' && vbenRoute.component.startsWith('/') ) {
       const children = vbenRoute.children;
       if (children) {
         children?.forEach((item) => {
@@ -256,14 +196,11 @@ async function generateAccess(options: GenerateMenuAndRoutesOptions) {
         duration: 1500,
         message: `${$t('common.loadingMenu')}...`,
       });
-      // return await getAllMenusApi();
+
       // 后台返回路由/菜单
-      const backMenuList = await getUserRoute();
+      const backMenuList = await authApi.getUserRoute();
       // 转换为vben能用的路由
       const vbenMenuList = backMenuToVbenMenu(backMenuList);
-      // 特别注意 这里要深拷贝
-      // const menuList = [...cloneDeep(localMenuList), ...vbenMenuList];
-      // console.log('menuList', menuList);
       return vbenMenuList;
     },
     // 可以指定没有权限跳转403页面

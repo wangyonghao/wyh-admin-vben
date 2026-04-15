@@ -30,6 +30,14 @@ interface MenuRecordBadgeRaw {
  */
 interface MenuRecordRaw extends MenuRecordBadgeRaw {
   /**
+   * 菜单名
+   */
+  name: string;
+  /**
+   * 菜单路径，唯一，可当作key
+   */
+  path: string;
+  /**
    * 激活时的图标名
    */
   activeIcon?: string;
@@ -47,10 +55,6 @@ interface MenuRecordRaw extends MenuRecordBadgeRaw {
    */
   icon?: Component | string;
   /**
-   * 菜单名
-   */
-  name: string;
-  /**
    * 排序号
    */
   order?: number;
@@ -62,10 +66,6 @@ interface MenuRecordRaw extends MenuRecordBadgeRaw {
    * 所有父级路径
    */
   parents?: string[];
-  /**
-   * 菜单路径，唯一，可当作key
-   */
-  path: string;
   /**
    * 是否显示菜单
    * @default true

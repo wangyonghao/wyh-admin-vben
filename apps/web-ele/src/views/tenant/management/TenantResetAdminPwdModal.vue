@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TenantResp } from '#/api';
+import type { TenantResp } from '#/apis';
 
 import { computed, ref } from 'vue';
 
@@ -10,7 +10,7 @@ import { encryptByRsa } from '@vben/utils';
 import { ElMessage } from 'element-plus';
 
 import { useVbenForm } from '#/adapter/form';
-import { updateTenantAdminUserPwd } from '#/api';
+import { updateTenantAdminUserPwd } from '#/apis';
 import { defaultFormValueGetter, useBeforeCloseDiff } from '#/utils/popup';
 
 import { useRestTenantAdminUserPwdFormSchema } from './TenantData';

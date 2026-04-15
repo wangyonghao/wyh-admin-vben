@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { MenuResp } from '#/api';
+import type { MenuResp } from '#/apis';
 
 import { computed, ref } from 'vue';
 
@@ -10,7 +10,7 @@ import { addFullName, filter, getPopupContainer } from '@vben/utils';
 import { ElMessage } from 'element-plus';
 
 import { useVbenForm } from '#/adapter/form';
-import { addMenu, getMenu, listMenu, updateMenu } from '#/api';
+import { addMenu, getMenu, listMenu, updateMenu } from '#/apis';
 import { defaultFormValueGetter, useBeforeCloseDiff } from '#/utils/popup';
 
 import { useMenuFormSchema } from './data';

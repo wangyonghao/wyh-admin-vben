@@ -1,7 +1,7 @@
 import type { MenuPermissionOption } from './data';
 
 import type { useVbenVxeGrid } from '#/adapter/vxe-table';
-import type { MenuResp } from '#/api';
+import type { MenuResp } from '#/apis';
 
 import { eachTree, isEmpty, treeToList } from '@vben/utils';
 

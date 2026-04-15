@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { VbenFormSchema } from '#/adapter/form';
-import type { UserResp } from '#/api';
+import type { UserResp } from '#/apis/system/user';
 
 import { computed, ref } from 'vue';
 
@@ -11,7 +11,7 @@ import { encryptByRsa } from '@vben/utils';
 import { ElMessage } from 'element-plus';
 
 import { useVbenForm } from '#/adapter/form';
-import { resetUserPwd } from '#/api/system/user';
+import { resetUserPwd } from '#/apis/system/user';
 import { defaultFormValueGetter, useBeforeCloseDiff } from '#/utils/popup';
 
 const emits = defineEmits(['success']);

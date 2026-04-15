@@ -1,10 +1,10 @@
 import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
-import { listTenantPackageDict } from '#/api/tenant';
+import { listTenantPackageDict } from '#/apis/tenant';
 import { useDict } from '#/hooks';
 import { $t } from '#/locales';
-import { datetimeFutrueShortcuts } from '#/utils/dateTools';
+import { datetimeFutureShortcuts } from '#/utils/dateTools';
 
 export function useTenantEditFormSchema(): VbenFormSchema[] {
   return [
@@ -34,7 +34,7 @@ export function useTenantEditFormSchema(): VbenFormSchema[] {
         type: 'datetime',
         format: 'YYYY-MM-DD HH:mm:ss',
         valueFormat: 'YYYY-MM-DD HH:mm:ss',
-        shortcuts: datetimeFutrueShortcuts,
+        shortcuts: datetimeFutureShortcuts,
       },
     },
     {

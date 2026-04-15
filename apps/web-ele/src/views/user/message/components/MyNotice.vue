@@ -2,7 +2,7 @@
 import type { VbenFormSchema } from '@vben/common-ui';
 
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { NoticeResp } from '#/api/system';
+import type { NoticeResp } from '#/apis/system/notice';
 
 import { useRouter } from 'vue-router';
 
@@ -12,7 +12,7 @@ import { $t } from '@vben/locales';
 import { ElLink, ElTag } from 'element-plus';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { listUserNotice } from '#/api/system/user-message';
+import { listUserNotice } from '#/apis/system/user-message';
 import { DictTag } from '#/components/dict';
 import { useDict } from '#/hooks';
 
